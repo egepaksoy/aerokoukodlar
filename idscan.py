@@ -13,7 +13,6 @@ try:
         for i in vehicle.drone_ids:
             print(f"{i}: {vehicle.get_mode(drone_id=i)}")
             print(f"{i}: {vehicle.get_pos(drone_id=i)}")
-            #print(f"{i}: {vehicle.get_miss_wp(drone_id=i)}")
 
 except KeyboardInterrupt:
     print("Exiting...")

@@ -51,13 +51,12 @@ def drone_miss(vehicle, drone_id, end_pos):
     while is_running:
         if time.time() - start_time > 5:
             print(f"{drone_id}>> ucus devam ediyor...")
-            start_time = time.time()
         
         if vehicle.on_location(loc=end_pos, seq=1, sapma=1, drone_id=drone_id):
             print(f"{drone_id}>> drone hedefe ulasti")
             #! RTL -> LAND
-            vehicle.set_mode(mode="LAND", drone_id=drone_id)
-            break
+            vehicle.set_mode(mode="RTL", drone_id=drone_id)
+            return
 
 
 vehicle = Vehicle(sys.argv[1])
@@ -67,9 +66,9 @@ start_time = time.time()
 is_running = True
 
 ALT = 5
-#! drone_1_pos = (39.925, 32.866, ALT)
-drone_3_pos = (40.7126606, 30.0260196, ALT)
-drone_1_pos = (40.7126958, 30.0260291, ALT)
+drone_1_pos = (-35.36305907, 149.16518658, ALT)
+drone_2_pos = (-35.36301891, 149.16522457, ALT)
+drone_3_pos = (-35.36294663, 149.16538495, ALT)
 
 try:
     for i in vehicle.drone_ids:
@@ -81,7 +80,10 @@ try:
         thrd.start()
         takeoff_thrds.append(thrd)
     
+    strtime = time.time()
     for i in takeoff_thrds:
+        if time.time() - strtime > 2:
+            print(i)
         if i.is_alive():
             i.join()
     
@@ -95,7 +97,8 @@ try:
         drone_miss_thrds.append(drone_thrd)
     
     for i in drone_miss_thrds:
-        i.join()
+        if (i.is_alive()):
+            i.join()
     
     print("Görev tamamlandı")
     

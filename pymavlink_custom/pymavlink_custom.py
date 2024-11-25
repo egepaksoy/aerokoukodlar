@@ -96,7 +96,7 @@ class Vehicle():
                     return message.airspeed
                 
                 if time.time() - start_time > 5:
-                    print(f"Drone {drone_id}, UYARI 5 SANIYEDIR HIZ DEGERI CEKILEMEDI!!!")
+                    print(f"{drone_id}>> UYARI 5 SANIYEDIR HIZ DEGERI CEKILEMEDI!!!")
                     start_time = time.time()
                     
         except Exception as e:
@@ -125,7 +125,7 @@ class Vehicle():
                 0, 0, 0, 0, 0  # Boş parametreler
             )
 
-            print(f"Drone {drone_id}, auto mod hızı {speed} m/s olarak ayarlandı")
+            print(f"{drone_id}>> auto mod hızı {speed} m/s olarak ayarlandı")
 
         except Exception as e:
             return e
@@ -155,7 +155,7 @@ class Vehicle():
                 0, 0  # yaw ve yaw_rate (kullanılmıyor)
             )
         
-            print(f"Drone {drone_id}, guided mod hızı {speed} m/s olarak ayarlandı")
+            print(f"{drone_id}>> guided mod hızı {speed} m/s olarak ayarlandı")
 
         except Exception as e:
             return e
@@ -202,7 +202,7 @@ class Vehicle():
                     1e6 / frequency_hz,
                     0,
                     0, 0, 0, 0)
-                print(f"{drone_id} id'li drona {message_input} mesajı basairyla iletildi.")
+                print(f"{drone_id}>> drona {message_input} mesajı basairyla iletildi.")
         except Exception as e:
             return e
 
@@ -249,7 +249,7 @@ class Vehicle():
                     return int(message.seq)
 
                 if time.time() - start_time > 5:
-                    print(f"Drone {drone_id}, UYARI 5 SANIYEDIR WAYPOINT MESAJI CEKILMEDI!: {miss_command}")
+                    print(f"{drone_id}>> UYARI 5 SANIYEDIR WAYPOINT MESAJI CEKILMEDI!: {miss_command}")
                     if miss_command == "CURRENT":
                         miss_command = "ITEM_REACHED"
                     elif miss_command == "ITEM_REACHED":
@@ -279,7 +279,7 @@ class Vehicle():
                     return yaw_deg
 
                 if time.time() - start_time > 5:
-                    print(f"Drone {drone_id}, UYARI 5 SANIYEDIR YAW ACISI CEKILEMEDI!!!")
+                    print(f"{drone_id}>> UYARI 5 SANIYEDIR YAW ACISI CEKILEMEDI!!!")
                     start_time = time.time()
 
         except Exception as e:
@@ -318,7 +318,7 @@ class Vehicle():
 
             else:
                 self.vehicle.mav.waypoint_clear_all_send(drone_id, self.vehicle.target_component)
-            print(f"{drone_id} idli drone'nun waypointleri silindi")
+            print(f"{drone_id}>> idli drone'nun waypointleri silindi")
         except Exception as e:
             return e
 
@@ -357,14 +357,14 @@ class Vehicle():
 
             for i, wp in enumerate(wpler):
                 self.vehicle.mav.send(wp)
-                print(f"Drone {drone_id}, Waypoint {i} gönderildi")
+                print(f"{drone_id}>> Waypoint {i} gönderildi")
 
             # İlk waypoint'i aktif yap
             self.vehicle.mav.mission_set_current_send(drone_id, self.vehicle.target_component, 0)
 
-            print(f"Drone {drone_id}, {len(wp_list)} waypoint başarıyla gönderildi")
+            print(f"{drone_id}>> {len(wp_list)} waypoint başarıyla gönderildi")
         except Exception as e:
-            print(f"Drone {drone_id}, Waypoint gönderme sırasında hata oluştu: {e}")
+            print(f"{drone_id}>> Waypoint gönderme sırasında hata oluştu: {e}")
 
     # TODO: HIZ AYARLAMASINA BAK
     # Dronu guided modunda hareket ettirir
@@ -418,11 +418,11 @@ class Vehicle():
                 else:
                     self.vehicle.mav.command_long_send(drone_id, self.vehicle.target_component, mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM, 0, arm, 0, 0, 0, 0, 0, 0)
                 if arm == 0:
-                    print(f"Drone {drone_id} Disarm edildi")
+                    print(f"{drone_id}>> Disarm edildi")
                 if arm == 1:
-                    print(f"Drone {drone_id} ARM edildi")
+                    print(f"{drone_id}>> ARM edildi")
             else:
-                print(f"Drone {drone_id} Gecersiz arm kodu: {arm}")
+                print(f"{drone_id}>> Gecersiz arm kodu: {arm}")
                 exit()
         except Exception as e:
             return e
@@ -435,16 +435,16 @@ class Vehicle():
         try:
             self.set_mode(mode="GUIDED", drone_id=drone_id)
             self.go_to(lat=takeoff_pos[0], lon=takeoff_pos[1], alt=alt, drone_id=drone_id)
-            print(f"Drone {drone_id}, kalkış konumuna ({takeoff_pos}) dönüyor...")
+            print(f"{drone_id}>> kalkış konumuna ({takeoff_pos}) dönüyor...")
 
             start_time = time.time()
             while self.on_location(loc=takeoff_pos, seq=0, sapma=1, drone_id=drone_id) == False:
                 if time.time() - start_time > 2:
-                    print(f"Drone {drone_id}, Kalkış konumuna dönüyor...")
+                    print(f"{drone_id}>> Kalkış konumuna dönüyor...")
                     start_time = time.time()
             
             self.set_mode(mode="LAND", drone_id=drone_id)
-            print(f"Drone {drone_id}, kalkış konumuna dönüldü ve iniş yapılıyor...")
+            print(f"{drone_id}>> kalkış konumuna dönüldü ve iniş yapılıyor...")
         
         except Exception as e:
             return e
@@ -456,14 +456,14 @@ class Vehicle():
 
         try:
             if drone_id not in self.drone_ids:
-                Exception(f"Drone {drone_id} bağlı değil")
+                Exception(f"{drone_id}>> bağlı değil")
 
             self.vehicle.mav.command_long_send(
                 drone_id, self.vehicle.target_component,
                 mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, alt)
             
-            print(f"Drone {drone_id} Takeoff mesaji gonderildi")
-            print(f"Drone {drone_id}, Takeoff alınıyor...")
+            print(f"{drone_id}>> Takeoff mesaji gonderildi")
+            print(f"{drone_id}>> Takeoff alınıyor...")
 
         except Exception as e:
             return e
@@ -475,31 +475,31 @@ class Vehicle():
 
         try:
             if drone_id not in self.drone_ids:
-                Exception(f"Drone {drone_id} bağlı değil")
+                Exception(f"{drone_id}>> bağlı değil")
 
             self.vehicle.mav.command_long_send(
                 drone_id, self.vehicle.target_component,
                 mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, alt)
             
-            print(f"Drone {drone_id} Takeoff mesaji gonderildi")
+            print(f"{drone_id}>> Takeoff mesaji gonderildi")
             
             current_alt = 0
             start_time = time.time()
 
-            print(f"Drone {drone_id}, Takeoff alınıyor...")
+            print(f"{drone_id}>> Takeoff alınıyor...")
             mode = self.get_mode(drone_id=drone_id)
             while current_alt < alt * 0.9:
                 current_alt = self.get_pos(drone_id=drone_id)[2]
                 current_mode = self.get_mode(drone_id=drone_id)
                 if time.time() - start_time > 2:
-                    print(f"Drone {drone_id}, Anlık irtifa: {current_alt} metre")
+                    print(f"{drone_id}>> Anlık irtifa: {current_alt} metre")
                     start_time = time.time()
         
                 if mode != current_mode:
                     print(f"!!!! UYARI MOD DEGISTI: {mode}->{current_mode}")
                     mode = current_mode
             
-            print(f"Drone {drone_id}, {alt} metreye yükseldi")
+            print(f"{drone_id}>> {alt} metreye yükseldi")
         except Exception as e:
             return e
 
@@ -510,7 +510,7 @@ class Vehicle():
         
         try:
             if drone_id not in self.drone_ids:
-                Exception(f"Drone {drone_id} bağlı değil")
+                Exception(f"{drone_id}>> bağlı değil")
 
             self.vehicle.wait_heartbeat(timeout=2)
             if mode == "RTL":
@@ -522,7 +522,7 @@ class Vehicle():
             else:
                 mode_id = self.vehicle.mode_mapping()[mode]
                 if mode not in self.vehicle.mode_mapping():
-                    print(f"Drone {drone_id}, Mod değiştirilemedi gecersiz mod: ", mode)
+                    print(f"{drone_id}>> Mod değiştirilemedi gecersiz mod: ", mode)
                     exit()
                 else:
                     self.vehicle.mav.command_long_send(drone_id, self.vehicle.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE, 0, mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED, mode_id, 0, 0, 0, 0, 0)
@@ -533,7 +533,7 @@ class Vehicle():
                 self.set_mode(mode=mode, drone_id=drone_id)
 
             else:
-                print(f"Drone {drone_id}, Mod {mode} yapıldı")
+                print(f"{drone_id}>> Mod {mode} yapıldı")
         except Exception as e:
             return e
 
@@ -544,7 +544,7 @@ class Vehicle():
 
         try:
             if drone_id not in self.drone_ids:
-                Exception(f"Drone {drone_id} bağlı değil")
+                Exception(f"{drone_id}>> bağlı değil")
                 
             start_time = time.time()
             while True:
@@ -557,7 +557,7 @@ class Vehicle():
                         return 0
 
                 if time.time() - start_time > 5:
-                    print(f"Drone {drone_id}, UYARI!!! 5 saniyedir arm durumu cekilmedi!!!")
+                    print(f"{drone_id}>> UYARI!!! 5 saniyedir arm durumu cekilmedi!!!")
                     start_time = time.time()
 
         except Exception as e:
@@ -593,7 +593,7 @@ class Vehicle():
                     return mavutil.mode_string_v10(msg)
 
                 if time.time() - start_time > 5:
-                    print(f"Drone {drone_id}, UYARI!!! 5 SANiYEDiR MOD BiLGiSi ALINAMADI!!!")
+                    print(f"{drone_id}>> UYARI!!! 5 SANiYEDiR MOD BiLGiSi ALINAMADI!!!")
                     start_time = time.time()
 
         except Exception as e:
@@ -639,7 +639,8 @@ class Vehicle():
         return R * c
 
     # Konumda oldugunu kontrol etme
-    def on_location(self, loc, seq: int=0, sapma: int=4, drone_id: int=None):
+    # pos, seq, sapma (mt), drone_id
+    def on_location(self, loc, seq: int=0, sapma: int=1, drone_id: int=None):
         if drone_id is None:
             drone_id = self.drone_id
         
@@ -648,11 +649,11 @@ class Vehicle():
                 Exception(f"Drone bağlantısı yok: {drone_id}")
 
             if seq != 0:
-                if abs(self.get_pos(drone_id=drone_id)[0] - loc[0]) <= self.DEG/sapma and abs(self.get_pos(drone_id=drone_id)[1] - loc[1]) <= self.DEG/sapma and self.get_miss_wp(drone_id=drone_id) == seq:
+                if abs(self.get_pos(drone_id=drone_id)[0] - loc[0]) <= self.DEG*sapma and abs(self.get_pos(drone_id=drone_id)[1] - loc[1]) <= self.DEG*sapma and self.get_miss_wp(drone_id=drone_id) == seq:
                     return True
                 return False
             else:
-                if abs(self.get_pos(drone_id=drone_id)[0] - loc[0]) <= self.DEG/sapma and abs(self.get_pos(drone_id=drone_id)[1] - loc[1]) <= self.DEG/sapma:
+                if abs(self.get_pos(drone_id=drone_id)[0] - loc[0]) <= self.DEG*sapma and abs(self.get_pos(drone_id=drone_id)[1] - loc[1]) <= self.DEG*sapma:
                     return True
                 return False
         except Exception as e:
