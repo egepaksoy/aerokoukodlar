@@ -30,8 +30,8 @@ drone_2_landing = False
 ALT = 5
 DRONE_1_ID = 1
 DRONE_2_ID = 2
-loc1 = (40.7121222, 30.0245074, ALT)
-loc2 = (40.7121222, 30.0245074, ALT)
+loc1 = (-35.36305893, 149.16516251, ALT)
+loc2 = (-35.36295790, 149.16525463, ALT)
 drone_1_pos = (loc1, loc1) # ilk waypoint dummy wp
 drone_2_pos = (loc2, loc2) # ilk waypoint dummy wp
 
@@ -65,6 +65,7 @@ try:
             print("ucuslar devam ediyor...")
             start_time = time.time()
         
+        #! thread yapılacak
         #### drone1 iniyor #########
         if vehicle.on_location(loc=drone_1_pos[1], seq=1, sapma=1, drone_id=DRONE_1_ID):
             print(f"{DRONE_1_ID}>> drone hedefe ulasti")
