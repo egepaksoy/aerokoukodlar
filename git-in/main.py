@@ -45,7 +45,7 @@ try:
     vehicle.set_mode(mode="AUTO", drone_id=DRONE_ID)
 
     start_time = time.time()
-    while is_running:
+    while True:
         if time.time() - start_time > 5:
             print(f"{DRONE_ID}>> ucus devam ediyor...")
             start_time = time.time()
