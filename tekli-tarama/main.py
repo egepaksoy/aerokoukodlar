@@ -28,10 +28,14 @@ vehicle = Vehicle(sys.argv[1])
 
 start_time = time.time()
 
-ALT = 4
+ALT = 5
 DRONE_ID = int(sys.argv[2]) # drone id
-loc = (40.7120853, 30.0245058, ALT)
-drone_pos = (loc, loc) # ilk waypoint dummy wp
+loc = (40.7121126, 30.0245267, ALT)
+drone_pos = [loc] # ilk waypoint dummy wp
+scan_wps = vehicle.scan_area_wpler(loc[0], loc[1], ALT, area_meter=5, distance_meter=2)
+drone_pos += scan_wps
+
+end_mode = "RTL"
 
 try:
     vehicle.set_mode(mode="GUIDED", drone_id=DRONE_ID)
@@ -46,13 +50,13 @@ try:
 
     start_time = time.time()
     while True:
-        if time.time() - start_time > 5:
+        if time.time() - start_time > 3:
             print(f"{DRONE_ID}>> ucus devam ediyor...")
             start_time = time.time()
         
-        if vehicle.on_location(loc=drone_pos[1], seq=1, sapma=1, drone_id=DRONE_ID):
+        if vehicle.on_location(loc=drone_pos[-1], seq=len(drone_pos) - 1, sapma=1, drone_id=DRONE_ID):
             print(f"{DRONE_ID}>> drone hedefe ulasti")
-            vehicle.set_mode(mode="LAND", drone_id=DRONE_ID)
+            vehicle.set_mode(mode=end_mode, drone_id=DRONE_ID)
             break
     
     print("Görev tamamlandı")
