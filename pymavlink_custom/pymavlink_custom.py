@@ -1,4 +1,5 @@
 from pymavlink import mavutil, mavwp
+import serial.tools.list_ports
 from pymavlink.dialects.v10 import ardupilotmega as mavlink
 import os
 import time
@@ -40,6 +41,15 @@ class Vehicle():
         except Exception as e:
             print("Baglanti saglanamadi: ", e)
             exit()
+    
+    def connect_port(self):
+        ports = serial.tools.list_ports.comports()
+        if ports:
+            for port in ports:
+                return port.device
+        else:
+            print("Hiçbir COM portu bağlı değil.")
+            return None
     
     def parse_message(self, message):
         return message, message.get_srcSystem()
@@ -566,8 +576,10 @@ class Vehicle():
     # Dronun baglanti yolunu kontrol eder
     def check_address(self, address: str):
         if address is None:
-            print("Baglanti yolu bos SITL'e baglaniliyor...")
-            address = "udp:172.22.160.1:14550"
+            address = self.connect_port()
+            if address is None:
+                print("COM portu bağlı değil.")
+                exit()
 
         if "tcp" not in address and "udp" not in address:
             if not os.path.exists(address):
@@ -656,6 +668,94 @@ class Vehicle():
                 if abs(self.get_pos(drone_id=drone_id)[0] - loc[0]) <= self.DEG*sapma and abs(self.get_pos(drone_id=drone_id)[1] - loc[1]) <= self.DEG*sapma:
                     return True
                 return False
+        except Exception as e:
+            return e
+
+    # Hata mesajlarını okuma
+    def error_messages(self):
+        start_time = time.time()
+        while True:
+            msg = self.vehicle.recv_match(type="STATUSTEXT", blocking=True)
+            
+            if msg:
+                drone_id = self.parse_message(msg)[1]  # Hata mesajının geldiği drone id'si
+                error_flag = msg.severity  # Hata mesajının ciddiyet seviyesi
+                error_msg = msg.text       # Hata mesajı metni
+                
+                # Ciddiyet seviyesi açıklamaları
+                if error_flag == 0:
+                    level = "EMERGENCY"
+                elif error_flag == 1:
+                    level = "ALERT"
+                elif error_flag == 2:
+                    level = "CRITICAL"
+                elif error_flag == 3:
+                    level = "ERROR"
+                elif error_flag == 4:
+                    level = "WARNING"
+                elif error_flag == 5:
+                    level = "NOTICE"
+                elif error_flag == 6:
+                    level = "INFO"
+                elif error_flag == 7:
+                    level = "DEBUG"
+                else:
+                    level = "UNKNOWN"
+
+                return drone_id, level, error_msg
+            
+            if time.time() - start_time > 5:
+                return None
+
+
+    def turn_around(self, default_speed: int=30, drone_id: int=1):
+        if drone_id is None:
+            drone_id = self.drone_id
+        
+        try:
+            yaw_angle = (360 + (self.get_yaw(drone_id=drone_id) - 20)) % 360
+            clock_wise = 1
+
+            print(f"{drone_id}>> Etrafında dönücek, yaw açısı: {yaw_angle}")
+            self.vehicle.mav.command_long_send(
+                drone_id,
+                self.vehicle.target_component, # Hedef bileşen ID
+                mavutil.mavlink.MAV_CMD_CONDITION_YAW, # Yaw kontrol komutu
+                0,                       # Confirmation (0: İlk komut)
+                int(yaw_angle),               # Yaw açısı
+                default_speed,                      # Dönüş hızı (derece/saniye)
+                clock_wise,                       # Yön (1: Saat yönü, -1: Saat tersi)
+                1,           # Açı göreceli mi? (0: Global, 1: Relative)
+                0, 0, 0                  # Kullanılmayan parametreler
+            )
+
+            start_time = time.time()
+            current_yaw = int(self.get_yaw(drone_id=drone_id))
+
+            while abs(current_yaw - yaw_angle) >= 15:
+                if abs(current_yaw - int(self.get_yaw(drone_id=drone_id))) <= 3:
+                    self.vehicle.mav.command_long_send(
+                        drone_id,
+                        self.vehicle.target_component, # Hedef bileşen ID
+                        mavutil.mavlink.MAV_CMD_CONDITION_YAW, # Yaw kontrol komutu
+                        0,                       # Confirmation (0: İlk komut)
+                        int(yaw_angle),               # Yaw açısı
+                        default_speed,                      # Dönüş hızı (derece/saniye)
+                        clock_wise,                       # Yön (1: Saat yönü, -1: Saat tersi)
+                        1,           # Açı göreceli mi? (0: Global, 1: Relative)
+                        0, 0, 0                  # Kullanılmayan parametreler
+                    )
+                    
+                current_yaw = int(self.get_yaw(drone_id=drone_id))
+                if time.time() - start_time > 2:
+                    print(f"{drone_id}>> Dönüş yapılıyor, mevcut yaw: {current_yaw}")
+                    start_time = time.time()
+                time.sleep(0.1)
+
+            time.sleep(0.5)
+
+            print(f"{drone_id}>> Etrafında döndü")
+        
         except Exception as e:
             return e
 
