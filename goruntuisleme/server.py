@@ -23,6 +23,10 @@ try:
     buffer = b''  # Gelen veri parçalarını depolamak için tampon
     current_frame = -1  # Geçerli çerçeve numarasını takip etmek için sayaç
 
+    total_frame = 0
+
+    frame_time = time.time()
+    fps = 0
     while True:
         data, addr = sock.recvfrom(BUFFER_SIZE)  # Maksimum UDP paket boyutu kadar veri al
         
@@ -37,12 +41,20 @@ try:
                 frame = cv2.imdecode(npdata, cv2.IMREAD_COLOR)
                 
                 if frame is not None:
+                    if time.time() - frame_time >= 1:
+                        fps = total_frame / (time.time() - frame_time)
+                        total_frame = 0
+                        frame_time = time.time()
+
+                    cv2.putText(frame, f"{fps}", (0, 25), 
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+
                     cv2.imshow('YOLOv8 Canlı Tespit', frame)  # Görüntüyü göster
-                    print(frame_number)
                 
                 buffer = b''  # Yeni görüntü için tamponu sıfırla
 
             current_frame = frame_number  # Geçerli çerçeve numarasını güncelle
+            total_frame += 1
         
         if packet_data == b'END':
             # Son paket işareti, çerçevenin sonu
@@ -53,7 +65,7 @@ try:
         # Çıkış için 'q' tuşuna basılması beklenir
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-
+            
 except Exception as e:
     print("Bir hata oluştu:", e)
 

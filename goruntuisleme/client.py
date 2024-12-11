@@ -23,6 +23,8 @@ time.sleep(2)  # Kamera başlatma süresi için bekle
 
 frame_counter = 0  # Çerçeve sayacını başlat
 
+total_frame = 0
+frame_time = time.time()
 try:
     while True:
         # Kamera görüntüsünü yakala
@@ -43,7 +45,15 @@ try:
         # Son paketle bir "son" işareti gönder
         sock.sendto(struct.pack('<L', frame_counter) + b'END', (UDP_IP, UDP_PORT))
 
+        if frame_counter == 20000:
+            frame_counter = 0
         frame_counter += 1  # Çerçeve sayacını artır
+        total_frame += 1
+
+        if time.time() - frame_time >= 0.1:
+            print(f"FPS: {total_frame / (time.time() - frame_time)}")
+            total_frame = 0
+            frame_time = time.time()
 
 except KeyboardInterrupt:
     print("Ctrl+C ile çıkıldı.")
