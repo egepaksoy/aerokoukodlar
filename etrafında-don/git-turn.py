@@ -30,7 +30,7 @@ start_time = time.time()
 
 ALT = 4
 DRONE_ID = int(sys.argv[2]) # drone id
-loc = (-35.36314109, 149.16522717, ALT)
+loc = (40.712117, 30.0245754, ALT)
 drone_pos = (loc, loc) # ilk waypoint dummy wp
 
 try:
@@ -58,6 +58,9 @@ try:
     vehicle.set_mode(mode="GUIDED", drone_id=DRONE_ID)
 
     vehicle.turn_around(default_speed=20, drone_id=DRONE_ID)
+
+    print("Donme bitti")
+    time.sleep(1)
     
     vehicle.go_to(lat=takeoff_pos[0], lon=takeoff_pos[1], alt=ALT, drone_id=DRONE_ID)
     print(f"{DRONE_ID}>> drone donuyor")

@@ -9,6 +9,7 @@ import struct
 # Kullanıcıdan IP adresi ve port numarasını komut satırından al
 UDP_IP = sys.argv[1]  # Alıcı bilgisayarın IP adresi
 UDP_PORT = int(sys.argv[2])  # Alıcı bilgisayarın port numarası
+# 61440
 PACKET_SIZE = 60000  # UDP paket boyutu, 60 KB
 
 # UDP soketi oluştur
@@ -43,10 +44,6 @@ try:
         sock.sendto(struct.pack('<L', frame_counter) + b'END', (UDP_IP, UDP_PORT))
 
         frame_counter += 1  # Çerçeve sayacını artır
-
-        # Çıkış için 'q' tuşuna basılması beklenir (isteğe bağlı)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
 
 except KeyboardInterrupt:
     print("Ctrl+C ile çıkıldı.")

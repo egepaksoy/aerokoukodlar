@@ -29,7 +29,7 @@ vehicle = Vehicle(sys.argv[1])
 
 start_time = time.time()
 
-ALT = 3
+ALT = 4
 DRONE_ID = int(sys.argv[2]) # drone id
 
 try:
