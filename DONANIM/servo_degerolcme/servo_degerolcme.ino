@@ -1,10 +1,11 @@
+#include <Servo.h>
+
 int analogPin = A0;  // Analog veri okunacak pin
 int analogValue = 0; // Okunan değeri saklamak için değişken
 
 void setup() {
-  Serial.begin(115200);  // Seri iletişim başlat (9600 baud rate)
+  Serial.begin(9600);  // Seri iletişim başlat (9600 baud rate)
   Serial.println("Analog Porttan Değer Okuma Başlıyor...");
-
 }
 
 void loop() {
