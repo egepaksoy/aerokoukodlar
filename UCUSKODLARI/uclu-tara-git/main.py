@@ -1,7 +1,6 @@
 import time
-import sys
 import threading
-import signal
+import sys
 
 sys.path.append('../pymavlink_custom')
 from pymavlink_custom import Vehicle
@@ -99,7 +98,7 @@ def drone_miss(vehicle, drone_values):
     if stop_event.is_set():
         return
     
-    vehicle.go_to(lat=current_pos[0], lon=current_pos[1], alt=MISS_ALT)
+    vehicle.go_to(lat=current_pos[0], lon=current_pos[1], alt=MISS_ALT, drone_id=DRONE_ID)
     
     if stop_event.is_set():
         return
@@ -107,21 +106,37 @@ def drone_miss(vehicle, drone_values):
     start_time = time.time()
     while not stop_event.is_set():
         if time.time() - start_time > 2:
-            print(f"{DRONE_ID}>> alçalıyor...")
+            print(f"{DRONE_ID}>> {MISS_ALT}'a alcaliyor\nmevcut yukseklik: {vehicle.get_pos(drone_id=DRONE_ID)[2]}")
             start_time = time.time()
     
         if stop_event.is_set():
             break
         
         if vehicle.get_pos(drone_id=DRONE_ID)[2] <= MISS_ALT * 1.1:
-            print(f"{DRONE_ID}>> alçaldı top birakip kalkış konumuna dönüyor...")
+            print(f"{DRONE_ID}>> alçaldı top birakildi...")
             time.sleep(2)
             break
 
     if stop_event.is_set():
         return
     
-    vehicle.go_to(lat=TAKEOFF_POS[0], lon=TAKEOFF_POS[1], alt=ALT)
+
+def return_home(vehicle, drone_values):
+    DRONE_ID = drone_values["drone_id"]
+    ALT = drone_values["alt"]
+    TAKEOFF_POS = drone_values["takeoff_pos"]
+
+    current_pos = vehicle.get_pos(drone_id=DRONE_ID)
+    vehicle.go_to(lat=current_pos[0], lon=current_pos[1], alt=ALT, drone_id=DRONE_ID)
+
+    while not stop_event.is_set():
+        if vehicle.get_pos(drone_id=DRONE_ID)[2] >= ALT * 0.9:
+            break
+
+    if stop_event.is_set():
+        return
+
+    vehicle.go_to(lat=TAKEOFF_POS[0], lon=TAKEOFF_POS[1], alt=ALT, drone_id=DRONE_ID)
 
     if stop_event.is_set():
         return
@@ -147,8 +162,6 @@ def drone_miss(vehicle, drone_values):
 if len(sys.argv) != 2:
     print("Usage: python main.py <connection_string>")
     sys.exit(1)
-
-signal.signal(signal.SIGINT, handle_exit_signal)
 
 vehicle = Vehicle(sys.argv[1])
 
@@ -202,19 +215,16 @@ try:
     drone2_miss.join()
     drone3_miss.join()
 
-    print(f"{drone1_values["drone_id"]}>> drone takeoff konumua dönüyor...")
-    vehicle.go_to(lat=drone1_values["takeoff_pos"][0], lon=drone1_values["takeoff_pos"][1], alt=drone1_values["alt"])
+    print(f"dronelar takeoff konumua dönüyor...")
+    
+    drone_lands = []
+    for d_id in vehicle.drone_ids:
+        thrd = threading.Thread(target=return_home, args=(vehicle, globals().get(f"drone{d_id}_values", None)))
+        thrd.start()
+        drone_lands.append(thrd)
 
-    start_time = time.time()
-    while True:
-        if time.time() - start_time > 5:
-            print(f"{drone1_values["drone_id"]}>> hedefe gidiyor...")
-            start_time = time.time()
-        
-        if vehicle.on_location(loc=drone1_values["takeoff_pos"], seq=0, sapma=1, drone_id=drone1_values["drone_id"]):
-            print(f"{drone1_values["drone_id"]}>> drone kalkış konumuna geldi LAND alıyor...")
-            vehicle.set_mode(mode="LAND", drone_id=drone1_values["drone_id"])
-            break
+    for t in drone_lands:
+        t.join()
     
     print("Görev tamamlandı")
 
