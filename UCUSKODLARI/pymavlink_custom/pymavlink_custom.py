@@ -725,14 +725,21 @@ class Vehicle():
 
             print(f"{drone_id}>> Etrafında dönülüyor...")
 
+            start_time = time.time()
             while True:
-                if abs(self.yaw_speed(drone_id=drone_id)) >= 0.1:
-                    print(self.yaw_speed(drone_id=drone_id))
-                    time.sleep(0.5)
+                yaw_speed = self.yaw_speed(drone_id=drone_id)
+                if abs(yaw_speed) >= 0.1:
+                    not_turning = False
+                    
                 else:
-                    break
+                    if time.time() - start_time >= 1:
+                        if not_turning:
+                            break
+                        start_time = time.time()
+                    not_turning = True
                     
             print(f"{drone_id}>> Dönüş tamamlandı")
+            return None
 
         
         except Exception as e:
