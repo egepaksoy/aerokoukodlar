@@ -1,6 +1,6 @@
 import time
 import sys
-sys.path.append('./pymavlink_custom')
+sys.path.append('../pymavlink_custom')
 from pymavlink_custom import *
 from pymavlink import mavutil
 import threading

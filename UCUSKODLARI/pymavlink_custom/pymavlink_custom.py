@@ -702,7 +702,7 @@ class Vehicle():
                 return None
 
 
-    def turn_around(self, default_speed: int=30, drone_id: int=1):
+    def turn_around(self, default_speed: int=30, drone_id: int=None):
         if drone_id is None:
             drone_id = self.drone_id
         
@@ -719,39 +719,47 @@ class Vehicle():
                 int(yaw_angle),               # Yaw açısı
                 default_speed,                      # Dönüş hızı (derece/saniye)
                 clock_wise,                       # Yön (1: Saat yönü, -1: Saat tersi)
-                1,           # Açı göreceli mi? (0: Global, 1: Relative)
+                0,           # Açı göreceli mi? (0: Global, 1: Relative)
                 0, 0, 0                  # Kullanılmayan parametreler
             )
 
-            start_time = time.time()
-            current_yaw = int(self.get_yaw(drone_id=drone_id))
+            print(f"{drone_id}>> Etrafında dönülüyor...")
 
-            while abs(current_yaw - yaw_angle) >= 15:
-                if abs(current_yaw - int(self.get_yaw(drone_id=drone_id))) <= 3:
-                    self.vehicle.mav.command_long_send(
-                        drone_id,
-                        self.vehicle.target_component, # Hedef bileşen ID
-                        mavutil.mavlink.MAV_CMD_CONDITION_YAW, # Yaw kontrol komutu
-                        0,                       # Confirmation (0: İlk komut)
-                        int(yaw_angle),               # Yaw açısı
-                        default_speed,                      # Dönüş hızı (derece/saniye)
-                        clock_wise,                       # Yön (1: Saat yönü, -1: Saat tersi)
-                        1,           # Açı göreceli mi? (0: Global, 1: Relative)
-                        0, 0, 0                  # Kullanılmayan parametreler
-                    )
+            while True:
+                if abs(self.yaw_speed(drone_id=drone_id)) >= 0.1:
+                    print(self.yaw_speed(drone_id=drone_id))
+                    time.sleep(0.5)
+                else:
+                    break
                     
-                current_yaw = int(self.get_yaw(drone_id=drone_id))
-                if time.time() - start_time > 2:
-                    print(f"{drone_id}>> Dönüş yapılıyor, mevcut yaw: {current_yaw}")
-                    start_time = time.time()
-                time.sleep(0.1)
+            print(f"{drone_id}>> Dönüş tamamlandı")
 
-            time.sleep(0.5)
-
-            print(f"{drone_id}>> Etrafında döndü")
         
         except Exception as e:
             return e
+    
+    def yaw_speed(self, drone_id: int=None):
+        if drone_id is None:
+            drone_id = self.drone_id
+        
+        try:
+            if drone_id not in self.drone_ids:
+                Exception(f"Drone bağlantısı yok: {drone_id}")
+
+            start_time = time.time()
+            while True:
+                msg = self.vehicle.recv_match(type='ATTITUDE', blocking=True)
+                
+                if self.parse_message(msg)[1] == drone_id:
+                    return msg.yawspeed
+
+                if time.time() - start_time > 5:
+                    print(f"{drone_id}>> UYARI!!! 5 SANiYEDiR YAW BiLGiSi ALINAMADI!!!")
+                    start_time = time.time()
+
+        except Exception as e:
+            return e
+
 
 # Kameradan goruntu hesaplama kodu
 def calc_hipo_angle(screen_rat_x_y, x_y, alt, yaw, alt_met):
