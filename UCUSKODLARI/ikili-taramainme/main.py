@@ -36,7 +36,7 @@ loc2 = (40.7119591, 30.024486, ALT_1)
 
 drone_pos = [loc] # ilk waypoint dummy wp
 
-scan_wps = vehicle.scan_area_wpler(loc[0], loc[1], ALT_1, area_meter=5, distance_meter=2)
+scan_wps = vehicle.scan_area_wpler(loc=loc, alt=ALT_1, area_meter=5, distance_meter=2)
 drone_pos += scan_wps
 
 try:
@@ -60,7 +60,7 @@ try:
         if vehicle.on_location(loc=drone_pos[-1], seq=len(drone_pos) - 1, sapma=1, drone_id=DRONE_1_ID):
             print(f"{DRONE_1_ID}>> drone hedefe ulasti")
             vehicle.set_mode(mode="GUIDED", drone_id=DRONE_1_ID)
-            vehicle.go_to(lat=drone1_takeoff[0], lon=drone1_takeoff[1], alt=vehicle.get_pos(drone_id=DRONE_1_ID)[2], drone_id=DRONE_1_ID)
+            vehicle.go_to(loc=drone1_takeoff, alt=vehicle.get_pos(drone_id=DRONE_1_ID)[2], drone_id=DRONE_1_ID)
             print(f"{DRONE_1_ID}>> gorevi bitirdi")
             break
 
@@ -83,7 +83,7 @@ try:
     
     print(f"{DRONE_2_ID}>> takeoff yaptı")
 
-    vehicle.go_to(lat=loc2[0], lon=loc2[1], alt=top_birakma_alt, drone_id=DRONE_2_ID)
+    vehicle.go_to(loc=loc2, alt=top_birakma_alt, drone_id=DRONE_2_ID)
     print(f"{DRONE_2_ID}>> drone hedefe gidiyor...")
 
     start_time = time.time()
@@ -94,7 +94,7 @@ try:
         
         if vehicle.on_location(loc=loc2, seq=0, sapma=1, drone_id=DRONE_2_ID):
             print(f"{DRONE_2_ID}>> drone hedefe ulasti")
-            vehicle.go_to(lat=drone2_takeoff[0], lon=drone2_takeoff[1], alt=top_birakma_alt, drone_id=DRONE_2_ID)
+            vehicle.go_to(loc=drone2_takeoff, alt=top_birakma_alt, drone_id=DRONE_2_ID)
 
             print(f"{DRONE_2_ID}>> gorevi bitirdi")
             break

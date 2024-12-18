@@ -370,13 +370,18 @@ class Vehicle():
         except Exception as e:
             print(f"{drone_id}>> Waypoint gönderme sırasında hata oluştu: {e}")
 
-    # TODO: HIZ AYARLAMASINA BAK
     # Dronu guided modunda hareket ettirir
-    def go_to(self, lat, lon, alt, drone_id: int=None):
+    def go_to(self, loc, alt, drone_id: int=None):
         if drone_id is None:
             drone_id = self.drone_id
 
         try:
+            if len(loc) != 2:
+                Exception(f"Geçersiz konum: {loc}")
+
+            lat = loc[0]
+            lon = loc[1]
+
             if drone_id not in self.drone_ids:
                 Exception(f"Drone bağlantısı yok: {drone_id}")
 
@@ -390,13 +395,18 @@ class Vehicle():
             return e
     
     # Tarama waypointlerini dondurur
-    def scan_area_wpler(self, center_lat, center_lon, alt, area_meter, distance_meter):
+    def scan_area_wpler(self, center_loc, alt, area_meter, distance_meter):
         met = -1 * (area_meter / 2)
         sign = 1
         i = 0
         wpler = []
 
         try:
+            if len(center_loc) != 2:
+                Exception(f"Geçersiz konum: {center_loc}")
+            center_lat = center_loc[0]
+            center_lon = center_loc[1]
+
             while i <= (area_meter / distance_meter):
                 last_waypoint = (center_lat + (met + distance_meter * i) * self.DEG, center_lon + (met * sign) * self.DEG)
                 sign *= -1

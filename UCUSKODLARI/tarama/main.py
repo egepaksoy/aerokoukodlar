@@ -40,7 +40,7 @@ try:
     
     print("Dronlar takeoff yaptı")
 
-    drone_pos += (vehicle.scan_area_wpler(loc[0], loc[1], ALT, area_meter=5, distance_meter=1))
+    drone_pos += (vehicle.scan_area_wpler(loc=loc, alt=ALT, area_meter=5, distance_meter=1))
     print(drone_pos)
     vehicle.send_all_waypoints(wp_list=drone_pos, drone_id=DRONE_ID)
 

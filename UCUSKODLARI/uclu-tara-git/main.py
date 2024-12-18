@@ -64,7 +64,7 @@ def drone_miss(vehicle, drone_values):
     start_time = time.time()
     first_time = time.time()
 
-    vehicle.go_to(lat=drone_values[current_miss][0], lon=drone_values[current_miss][1], alt=ALT, drone_id=DRONE_ID)
+    vehicle.go_to(loc=drone_values[current_miss], alt=ALT, drone_id=DRONE_ID)
 
     while not stop_event.is_set():
         if time.time() - start_time > 5:
@@ -78,7 +78,7 @@ def drone_miss(vehicle, drone_values):
             if time.time() - first_time > 3:
                 print(f"{DRONE_ID}>> Yeni bir hedef buldu oraya yöneliyor...")
                 current_miss = "second_miss_point"
-                vehicle.go_to(lat=drone_values[current_miss][0], lon=drone_values[current_miss][1], alt=ALT, drone_id=DRONE_ID)
+                vehicle.go_to(loc=drone_values[current_miss], alt=ALT, drone_id=DRONE_ID)
                 on_second_miss = True
 
         if stop_event.is_set():
@@ -99,7 +99,7 @@ def drone_miss(vehicle, drone_values):
     if stop_event.is_set():
         return
     
-    vehicle.go_to(lat=current_pos[0], lon=current_pos[1], alt=MISS_ALT, drone_id=DRONE_ID)
+    vehicle.go_to(loc=current_pos, alt=MISS_ALT, drone_id=DRONE_ID)
     
     if stop_event.is_set():
         return
@@ -128,7 +128,7 @@ def return_home(vehicle, drone_values):
     TAKEOFF_POS = drone_values["takeoff_pos"]
 
     current_pos = vehicle.get_pos(drone_id=DRONE_ID)
-    vehicle.go_to(lat=current_pos[0], lon=current_pos[1], alt=ALT, drone_id=DRONE_ID)
+    vehicle.go_to(loc=current_pos, alt=ALT, drone_id=DRONE_ID)
 
     while not stop_event.is_set():
         if vehicle.get_pos(drone_id=DRONE_ID)[2] >= ALT * 0.9:
@@ -137,7 +137,7 @@ def return_home(vehicle, drone_values):
     if stop_event.is_set():
         return
 
-    vehicle.go_to(lat=TAKEOFF_POS[0], lon=TAKEOFF_POS[1], alt=ALT, drone_id=DRONE_ID)
+    vehicle.go_to(loc=TAKEOFF_POS, alt=ALT, drone_id=DRONE_ID)
 
     if stop_event.is_set():
         return
@@ -177,7 +177,7 @@ try:
     takeoff_drone(vehicle=vehicle, drone_values=drone1_values)
     drone1_values["takeoff_pos"] = vehicle.get_pos(drone_id=drone1_values["drone_id"])
 
-    vehicle.go_to(lat=drone1_values["miss_point"][0], lon=drone1_values["miss_point"][1], alt=drone1_values["alt"], drone_id=drone1_values["drone_id"])
+    vehicle.go_to(loc=drone1_values["miss_point"], alt=drone1_values["alt"], drone_id=drone1_values["drone_id"])
 
     start_time = time.time()
     while not stop_event.is_set():

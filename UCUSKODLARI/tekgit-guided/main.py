@@ -42,7 +42,7 @@ try:
     
     print(f"{DRONE_ID}>> takeoff yaptı")
 
-    vehicle.go_to(lat=loc[0], lon=loc[1], alt=inme_alt, drone_id=DRONE_ID)
+    vehicle.go_to(loc=loc, alt=inme_alt, drone_id=DRONE_ID)
     print(f"{DRONE_ID}>> drone hedefe gidiyor...")
 
     start_time = time.time()

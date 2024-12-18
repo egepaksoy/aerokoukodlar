@@ -33,7 +33,7 @@ DRONE_ID = int(sys.argv[2]) # drone id
 loc = (40.7121571, 30.024534, ALT)
 #loc = (-35.36320285, 149.16522936, ALT)
 drone_pos = [loc] # ilk waypoint dummy wp
-scan_wps = vehicle.scan_area_wpler(loc[0], loc[1], ALT, area_meter=8, distance_meter=2)
+scan_wps = vehicle.scan_area_wpler(loc=loc, alt=ALT, area_meter=8, distance_meter=2)
 drone_pos += scan_wps
 
 end_mode = "LAND"
@@ -61,7 +61,7 @@ try:
             break
     
     vehicle.set_mode(mode="GUIDED", drone_id=DRONE_ID)
-    vehicle.go_to(lat=takeoff_pos[0], lon=takeoff_pos[1], alt=ALT)
+    vehicle.go_to(loc=takeoff_pos, alt=ALT, drone_id=DRONE_ID)
     while True:
         if time.time() - start_time > 3:
             print(f"{DRONE_ID}>> ucus devam ediyor...")

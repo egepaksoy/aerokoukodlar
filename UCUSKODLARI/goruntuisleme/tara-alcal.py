@@ -40,7 +40,7 @@ loc = (40.7119682, 30.024605, ALT)
 
 drone_pos = [loc] # ilk waypoint dummy wp
 
-scan_wps = vehicle.scan_area_wpler(loc[0], loc[1], ALT, area_meter=5, distance_meter=1)
+scan_wps = vehicle.scan_area_wpler(loc=loc, alt=ALT, area_meter=5, distance_meter=1)
 drone_pos += scan_wps
 
 end_mode = "LAND"
@@ -92,7 +92,7 @@ try:
         #! algılanan konuma gitme
         print(f"{DRONE_ID}>> ates konumuna gidiyor...")
         vehicle.set_mode(mode="GUIDED", drone_id=DRONE_ID)
-        vehicle.go_to(lat=ates_posizyonu[0], lon=ates_posizyonu[1], alt=ALT)
+        vehicle.go_to(loc=ates_posizyonu, alt=ALT, drone_id=DRONE_ID)
 
         while True:
             if time.time() - start_time > 2:
@@ -110,7 +110,7 @@ try:
     # MANUEL RTL
     print(f"{DRONE_ID}>> drone inişe geçti")
     vehicle.set_mode(mode="GUIDED", drone_id=DRONE_ID)
-    vehicle.go_to(lat=takeoff_pos[0], lon=takeoff_pos[1], alt=ALT)
+    vehicle.go_to(loc=takeoff_pos, alt=ALT, drone_id=DRONE_ID)
     while True:
         if time.time() - start_time > 3:
             print(f"{DRONE_ID}>> drone inise geciyor...")

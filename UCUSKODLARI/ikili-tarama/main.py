@@ -31,7 +31,7 @@ DRONE_1_ID = 1
 DRONE_2_ID = 3
 loc = (40.7121505, 30.0245339, ALT_1)
 drone_pos = [loc] # ilk waypoint dummy wp
-scan_wps = vehicle.scan_area_wpler(loc[0], loc[1], ALT_1, area_meter=5, distance_meter=2)
+scan_wps = vehicle.scan_area_wpler(loc=loc, alt=ALT_1, area_meter=5, distance_meter=2)
 drone_pos += scan_wps
 
 end_mode = "RTL"
@@ -83,7 +83,7 @@ try:
             print(f"{DRONE_2_ID}>> drone hedefe ulasti")
             vehicle.set_mode(mode="GUIDED", drone_id=DRONE_2_ID)
             current_pos = vehicle.get_pos(drone_id=DRONE_2_ID)
-            vehicle.go_to(lat=current_pos[0], lon=current_pos[1], alt=top_birakma_alt, drone_id=DRONE_2_ID)
+            vehicle.go_to(loc=current_pos, alt=top_birakma_alt, drone_id=DRONE_2_ID)
 
             start_time = time.time()
             while vehicle.get_pos(drone_id=DRONE_2_ID)[2] <= top_birakma_alt * 1.1:

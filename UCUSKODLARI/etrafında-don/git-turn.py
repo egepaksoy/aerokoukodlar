@@ -62,7 +62,7 @@ try:
     print("Donme bitti")
     time.sleep(1)
     
-    vehicle.go_to(lat=takeoff_pos[0], lon=takeoff_pos[1], alt=ALT, drone_id=DRONE_ID)
+    vehicle.go_to(loc=takeoff_pos, alt=ALT, drone_id=DRONE_ID)
     print(f"{DRONE_ID}>> drone donuyor")
 
     while True:
