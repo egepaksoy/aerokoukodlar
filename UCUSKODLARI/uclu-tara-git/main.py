@@ -50,6 +50,7 @@ def takeoff_drone(vehicle, drone_values):
     
     print(f"{DRONE_ID}>> takeoff yaptı")
 
+
 def drone_miss(vehicle, drone_values):
     DRONE_ID = drone_values["drone_id"]
     ALT = drone_values["alt"]
@@ -106,7 +107,7 @@ def drone_miss(vehicle, drone_values):
     start_time = time.time()
     while not stop_event.is_set():
         if time.time() - start_time > 2:
-            print(f"{DRONE_ID}>> {MISS_ALT}'a alcaliyor\nmevcut yukseklik: {vehicle.get_pos(drone_id=DRONE_ID)[2]}")
+            print(f"{DRONE_ID}>> {MISS_ALT} metre'ye alcaliyor")
             start_time = time.time()
     
         if stop_event.is_set():
@@ -201,8 +202,13 @@ try:
     drone2_takeoff.start()
     drone3_takeoff.start()
 
-    drone2_takeoff.join()
-    drone3_takeoff.join()
+    if stop_event.is_set():
+        sys.exit(1)
+
+    while not stop_event.is_set():
+        if not drone2_takeoff.is_alive() and not drone3_takeoff.is_alive():
+            break
+
     drone2_values["takeoff_pos"] = vehicle.get_pos(drone_id=drone2_values["drone_id"])
     drone3_values["takeoff_pos"] = vehicle.get_pos(drone_id=drone3_values["drone_id"])
     print("Saldiri dronlari hedefe gidiyor...")
@@ -212,19 +218,26 @@ try:
     drone2_miss.start()
     drone3_miss.start()
 
-    drone2_miss.join()
-    drone3_miss.join()
+    if stop_event.is_set():
+        sys.exit(1)
+
+    while not stop_event.is_set():
+        if not drone2_miss.is_alive() and not drone3_miss.is_alive():
+            break
 
     print(f"dronelar takeoff konumua dönüyor...")
     
-    drone_lands = []
-    for d_id in vehicle.drone_ids:
-        thrd = threading.Thread(target=return_home, args=(vehicle, globals().get(f"drone{d_id}_values", None)))
-        thrd.start()
-        drone_lands.append(thrd)
+    drone1_land = threading.Thread(target=return_home, args=(vehicle, drone1_values))
+    drone2_land = threading.Thread(target=return_home, args=(vehicle, drone2_values))
+    drone3_land = threading.Thread(target=return_home, args=(vehicle, drone3_values))
 
-    for t in drone_lands:
-        t.join()
+    drone1_land.start()
+    drone2_land.start()
+    drone3_land.start()
+
+    while not stop_event.is_set():
+        if not drone1_land.is_alive() and not drone2_land.is_alive() and not drone3_land.is_alive():
+            break
     
     print("Görev tamamlandı")
 
