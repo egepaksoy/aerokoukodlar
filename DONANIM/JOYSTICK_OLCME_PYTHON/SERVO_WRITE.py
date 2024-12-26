@@ -36,7 +36,7 @@ def handle_client_connection(client_socket):
             if not data:
                 break  # Bağlantı kesilmiş
             if "\n" in data.decode("utf-8"):
-                data_queue = data.decode('utf-8').strip()
+                data_queue = data.decode('utf-8').strip()[0:9]
         
         except socket.timeout:
             continue
@@ -68,8 +68,13 @@ def is_data_valid(data):
     """Gelen verinin geçerli olup olmadığını kontrol eder."""
     try:
         if "|" in data:
-            x_value = data.split("|")[0]
-            y_value = data.split("|")[1]
+            x_value = data.split("|")[0].strip()
+            y_value = data.split("|")[1].strip()
+
+            if len(x_value) == 4 and len(y_value) == 4:
+                pass
+            else:
+                return False
 
             if x_value.isdigit() and y_value.isdigit():
                 return True
@@ -78,8 +83,6 @@ def is_data_valid(data):
         else:
             return False
     except:
-        return False
-    finally:
         return False
 
 def return_normal(value):
@@ -111,15 +114,9 @@ try:
 
     data = ""
     while not stop_event.is_set():
-        if "|" in data_queue and is_data_valid(data_queue):
-            if abs(int(data.split("|")[0]) - int(data_queue.split("|")[0])) <= 5 and abs(int(data.split("|")[1]) - int(data_queue.split("|")[1])) <= 5:
-                continue
-
-        if data_queue != data:
+        if is_data_valid(data_queue):
             data = data_queue
-            print(data)
-            if not is_data_valid(data):
-                continue
+            
             x_value = int(return_normal(data.split("|")[0]))
             y_value = int(return_normal(data.split("|")[1]))
 
@@ -139,4 +136,5 @@ except KeyboardInterrupt:
 finally:
     if not stop_event.is_set():
         stop_event.set()
+    ser.close()
     sys.exit(1)

@@ -1,73 +1,58 @@
 #include <Servo.h>
 
-Servo servoX;
-Servo servoY;
+Servo myServoX; // Servo motor objesi
+Servo myServoY; // Servo motor objesi
 
-const int servoXPin = 9;
-const int servoYPin = 10;
+const int servoYPin = 9;      // Servo motor pini
+const int servoXPin = 10;      // Servo motor pini
+int artisMiktari = 2;
 
-const int servoXAnalogPin = A0;
-const int servoYAnalogPin = A1;
+int currentXPosition = 90; // Servo başlangıç pozisyonu (orta)
+int currentYPosition = 90; // Servo başlangıç pozisyonu (orta)
 
-int hassasiyet = 2;
-
-int currentXPosition = 90;
-int currentYPosition = 90;
-
-int xValue = -1;
-int yValue = -1;
+bool first = true;
 
 void setup() {
-  servoX.attach(servoXPin);
-  servoY.attach(servoYPin);
-  
-  servoX.write(currentXPosition);
-  servoY.write(currentYPosition);
+  myServoX.attach(servoXPin);    // Servo motoru belirtilen pine bağla
+  myServoX.write(currentXPosition); // Servo başlangıç pozisyonuna ayarla
 
-  Serial.begin(9600);
+  myServoY.attach(servoYPin);    // Servo motoru belirtilen pine bağla
+  myServoY.write(currentYPosition); // Servo başlangıç pozisyonuna ayarla
+  
+  Serial.begin(9600);          // Seri iletişimi başlat
 }
 
 void loop() {
-  String data = Serial.readStringUntil("\n");
-  int delimeterIndex = data.indexOf("|");
+  if (Serial.available() > 0) {
+    String receivedData = Serial.readStringUntil('\n');
+    int joystickXValue = receivedData.substring(0, receivedData.indexOf("|")).toInt();
+    int joystickYValue = receivedData.substring(receivedData.indexOf("|") + 1).toInt();
 
-  Serial.println(xValue);
-  Serial.println(yValue);
+    while (Serial.available() <= 0) {
+      if (joystickXValue > 900) {
+        currentXPosition += artisMiktari;
+        if (currentXPosition > 180) currentXPosition = 180;
+        myServoX.write(currentXPosition);
+      } else if (joystickXValue < 200) {
+        currentXPosition -= artisMiktari;
+        if (currentXPosition < 0) currentXPosition = 0;
+        myServoX.write(currentXPosition);
+      }
 
-  if (delimeterIndex != -1) {
-    xValue = data.substring(0, delimeterIndex).toInt();
-    yValue = data.substring(delimeterIndex + 1).toInt();
-  }
+      if (joystickYValue > 900) {
+        currentYPosition += artisMiktari;
+        if (currentYPosition > 180) currentYPosition = 180;
+        myServoY.write(currentYPosition);
+      } else if (joystickYValue < 200) {
+        currentYPosition -= artisMiktari;
+        if (currentYPosition < 0) currentYPosition = 0;
+        myServoY.write(currentYPosition);
+      }
 
-  if (xValue != -1) {
-    if (xValue > 900) {
-      currentXPosition += hassasiyet;
+      Serial.println(joystickXValue);
+      Serial.println(joystickYValue);
       
-      if (currentXPosition > 180) currentXPosition = 180;
-      servoX.write(currentXPosition);
-    }
-
-    else if (xValue < 200) {
-      currentXPosition -= hassasiyet; // Servo pozisyonunu azalt
-      if (currentXPosition < 0) currentXPosition = 0; // Minimum 0 dereceyi sınırla
-      servoX.write(currentXPosition); // Servo yeni pozisyona döner
+      delay(20);
     }
   }
-
-  if (yValue != -1) {
-    if (yValue > 900) {
-      currentYPosition += hassasiyet;
-      
-      if (currentYPosition > 180) currentYPosition = 180;
-      servoY.write(currentYPosition);
-    }
-
-    else if (yValue < 200) {
-      currentYPosition -= hassasiyet; // Servo pozisyonunu azalt
-      if (currentYPosition < 0) currentYPosition = 0; // Minimum 0 dereceyi sınırla
-      servoY.write(currentYPosition); // Servo yeni pozisyona döner
-    }
-  }
-
-  delay(15);
 }
