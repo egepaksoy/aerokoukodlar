@@ -75,7 +75,7 @@ def drone_miss(vehicle, drone_values):
             break
         
         if on_second_miss == False and "second_miss_point" in drone_values:
-            if time.time() - first_time > 3:
+            if time.time() - first_time >= 1.5:
                 print(f"{DRONE_ID}>> Yeni bir hedef buldu oraya yöneliyor...")
                 current_miss = "second_miss_point"
                 vehicle.go_to(loc=drone_values[current_miss], alt=ALT, drone_id=DRONE_ID)
@@ -169,8 +169,8 @@ vehicle = Vehicle(sys.argv[1])
 stop_event = threading.Event()
 start_time = time.time()
 
-drone1_values = {"drone_id": 1, "drone_name": "Körfez", "alt": 7, "miss_point": [-35.36319015, 149.16521642], "takeoff_pos": []}
-drone2_values = {"drone_id": 3, "drone_name": "Feniks 2", "alt": 4, "miss_alt": 3, "miss_point": [-35.36310345, 149.16511771], "second_miss_point": [-35.36323173, 149.16503526], "takeoff_pos": []}
+drone1_values = {"drone_id": 1, "drone_name": "Körfez", "alt": 5, "miss_point": [40.712078, 30.0245225], "takeoff_pos": []}
+drone2_values = {"drone_id": 3, "drone_name": "Feniks 2", "alt": 5, "miss_alt": 3, "miss_point": [40.7121696, 30.0246091], "second_miss_point": [40.7121488, 30.0245043], "takeoff_pos": []}
 
 try:
     takeoff_drone(vehicle=vehicle, drone_values=drone1_values)
@@ -194,6 +194,10 @@ try:
     vehicle.turn_around(drone_id=drone1_values["drone_id"])
     time.sleep(1)
     print(f"{drone1_values["drone_id"]}>> taramayi bitirdi")
+
+    print(f"{drone1_values["drone_id"]}>> iniyor...")
+    return_home(vehicle=vehicle, drone_values=drone1_values)
+
     print("Saldiri dronlari kalkiyor...")
 
     drone2_takeoff = threading.Thread(target=takeoff_drone, args=(vehicle, drone2_values))
@@ -222,14 +226,12 @@ try:
 
     print(f"dronelar takeoff konumua dönüyor...")
     
-    drone1_land = threading.Thread(target=return_home, args=(vehicle, drone1_values))
     drone2_land = threading.Thread(target=return_home, args=(vehicle, drone2_values))
 
-    drone1_land.start()
     drone2_land.start()
 
     while not stop_event.is_set():
-        if not drone1_land.is_alive() and not drone2_land.is_alive():
+        if not drone2_land.is_alive():
             break
     
     print("Görev tamamlandı")
