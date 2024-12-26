@@ -1,3 +1,4 @@
+import time
 import socket
 import threading
 import sys
@@ -7,15 +8,6 @@ import serial
 def send_to_arduino(ser, data):
     """Arduino'ya seri port üzerinden veri gönderir."""
     try:
-        # Seri portu aç
-        x_data = data.strip().split("|")[0]
-        y_data = data.strip().split("|")[1]
-
-        x_data = str((int(x_data) + 1) * 180 / 1023)
-        y_data = str((int(y_data) + 1) * 180 / 1023)
-
-        data = f"{x_data}|{y_data}\n"
-        
         ser.write(data.encode('utf-8'))
 
     except serial.SerialException as e:
@@ -112,17 +104,18 @@ try:
 
     ser = serial.Serial(usb_port, 9600, timeout=1)
 
-    data = ""
+    data = data_queue
+    start_time = time.time()
     while not stop_event.is_set():
         if is_data_valid(data_queue):
-            data = data_queue
-            
-            x_value = int(return_normal(data.split("|")[0]))
-            y_value = int(return_normal(data.split("|")[1]))
+            x_value = int(return_normal(data_queue.split("|")[0]))
+            y_value = int(return_normal(data_queue.split("|")[1]))
 
-            print("X:", int(x_value), "Y:", int(y_value))
+            if time.time() - start_time >= 3:
+                print("X:", int(x_value), "Y:", int(y_value))
+                start_time = time.time()
             send_to_arduino(ser, f"{int(x_value)}|{int(y_value)}\n")
-
+        
 except Exception as e:
     if not stop_event.is_set():
         stop_event.set()

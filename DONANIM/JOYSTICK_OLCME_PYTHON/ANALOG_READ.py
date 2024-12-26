@@ -1,3 +1,4 @@
+import time
 import serial.tools.list_ports
 import sys
 import socket
@@ -82,12 +83,13 @@ try:
     client = TCP_Client(recv_ip=recv_ip, recv_port=recv_port)
     serial = Serial_Control()
 
+    start_time = time.time()
     while True:
         try:
             ser_val = serial.read_value()
             if ser_val != "":
-                x_value = ser_val.split("|")[0]
-                y_value = ser_val.split("|")[1]
+                x_value = ser_val.split("|")[0].strip()
+                y_value = ser_val.split("|")[1].strip()
 
                 i = 0
                 while 4 - len(x_value) > i:
@@ -105,7 +107,9 @@ try:
                 if y_value == "000":
                     y_value += "0"
 
-                print(f"X: {x_value}, Y: {y_value}")
+                if time.time() - start_time >= 3:
+                    print(f"X: {x_value}, Y: {y_value}")
+                    start_time = time.time()
                 send_data = str(x_value) + "|" + str(y_value) + "\n"
                 client.send_data(send_data)
 
@@ -122,5 +126,3 @@ except Exception as e:
 finally:
     if "client" in locals():
         client.client.close()
-    if "ser" in locals():
-        ser.close()

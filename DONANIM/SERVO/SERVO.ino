@@ -7,6 +7,9 @@ const int servoYPin = 9;      // Servo motor pini
 const int servoXPin = 10;      // Servo motor pini
 int artisMiktari = 2;
 
+int joystickXValue = 500;
+int joystickYValue = 500;
+
 int currentXPosition = 90; // Servo başlangıç pozisyonu (orta)
 int currentYPosition = 90; // Servo başlangıç pozisyonu (orta)
 
@@ -25,8 +28,14 @@ void setup() {
 void loop() {
   if (Serial.available() > 0) {
     String receivedData = Serial.readStringUntil('\n');
-    int joystickXValue = receivedData.substring(0, receivedData.indexOf("|")).toInt();
-    int joystickYValue = receivedData.substring(receivedData.indexOf("|") + 1).toInt();
+    
+    if (receivedData.indexOf("|") < 0) {
+      joystickXValue = 500;
+      joystickYValue = 500;
+    }
+
+    joystickXValue = receivedData.substring(0, receivedData.indexOf("|")).toInt();
+    joystickYValue = receivedData.substring(receivedData.indexOf("|") + 1).toInt();
 
     while (Serial.available() <= 0) {
       if (joystickXValue > 900) {
@@ -51,7 +60,7 @@ void loop() {
 
       Serial.println(joystickXValue);
       Serial.println(joystickYValue);
-      
+
       delay(20);
     }
   }
