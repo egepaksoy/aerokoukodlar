@@ -1,4 +1,4 @@
-const int ppmPin = 9;  // PPM çıkış pini
+const int ppmPin = 12;  // PPM çıkış pini
 const int channelCount = 8;  // PPM kanal sayısı
 int channels[channelCount] = {1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500};  // PWM değerleri (1000-2000 µs)
 
@@ -17,6 +17,7 @@ void loop() {
     if (Serial.available() > 0) {
         String input = Serial.readStringUntil('\n');  // Satır sonuna kadar veri oku
         parseInput(input);
+        Serial.println(input);
     }
     sendPPM();  // PPM sinyalini gönder
 }
@@ -32,6 +33,7 @@ void parseInput(String input) {
         } else {
             channels[index] = 1500;  // Hatalı değer gelirse default değer
         }
+        Serial.println(channels[index]);
         index++;
         ptr = strtok(NULL, " ");
     }

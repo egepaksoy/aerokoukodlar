@@ -20,6 +20,8 @@ class Vehicle():
             # 1 Metre
             self.DEG = 0.00001172485
 
+            self.TAKEOFF_POS = {}
+
             if on_flight:
                 self.get_all_drone_ids()
                 drone_idler = self.get_all_drone_ids()
@@ -34,7 +36,6 @@ class Vehicle():
                 self.request_message_interval("GLOBAL_POSITION_INT", 2, self.drone_ids)
                 self.request_message_interval("MISSION_CURRENT", 3, self.drone_ids)
                 self.request_message_interval("VFR_HUD", 4, self.drone_ids)
-
                 print("Mesajlar gonderildi")
 
                 self.wp = mavwp.MAVWPLoader()
@@ -209,6 +210,16 @@ class Vehicle():
                 print(f"{drone_id}>> drona {message_input} mesajı basairyla iletildi.")
         except Exception as e:
             return e
+
+    # Dronun home konumunu döndürür
+    def get_home_pos(self, drone_id: int=None):
+        if drone_id is None:
+            drone_id = self.drone_id
+        
+        try:
+            return self.TAKEOFF_POS[drone_id]
+        except:
+            return None
 
     # Dronun konumunu döndürür
     def get_pos(self, drone_id: int=None):
@@ -435,6 +446,12 @@ class Vehicle():
                     print(f"{drone_id}>> Disarm edildi")
                 if arm == 1:
                     print(f"{drone_id}>> ARM edildi")
+                    if drone_id not in self.TAKEOFF_POS:
+                        current_pos = self.get_pos(drone_id=drone_id)
+                        if len(current_pos) != 3:
+                            print(f"{drone_id}>> TAKEOFF Pozisyonu alınamadı!!!")
+                        else:
+                            self.TAKEOFF_POS[drone_id] = current_pos
             else:
                 print(f"{drone_id}>> Gecersiz arm kodu: {arm}")
                 exit()

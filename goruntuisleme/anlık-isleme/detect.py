@@ -90,28 +90,31 @@ try:
                     cls = int(box.cls[0].item())
                     conf = box.conf[0].item()
 
+                    # Sınırlayıcı kutu koordinatlarını al
+                    x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                    konumu = (x1 + (x2-x1)/2, y1 + (y2-y1)/2)
+
                     # Sınıf adını al
                     class_name = model.names[cls]
 
-                    if keyboard.is_pressed("c") and class_name not in applicated_classes:
+                    if keyboard.is_pressed("c") and class_name not in applicated_classes and center_image(konumu, ekran_orani, orta_pozisyon_orani)["x"] == "Merkezde" and center_image(konumu, ekran_orani, orta_pozisyon_orani)["y"] == "Merkezde":
                         applicated_classes.append(class_name)
                         cv2.putText(frame, f"{class_name} sınıfı eklendi", (0, 50), 
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
 
                     if class_name not in applicated_classes:
-                        continue
-
-                    # Sınırlayıcı kutu koordinatlarını al
-                    x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                        cv2.fillPoly(frame, [np.array([[int(x1), int(y1)], [int(x2), int(y2)], [int(x1), int(y2)], [int(x2), int(y1)]])], (0, 0, 0))
+                        box_color = (0, 0, 255)
+                    else:
+                        box_color = (0, 255, 0)
 
                     # Bilgileri ekrana yazdır
                     print(f"Sınıf: {class_name}, Güven: {conf:.2f}, Konum: ({x1:.0f}, {y1:.0f}, {x2:.0f}, {y2:.0f}")
-                    konumu = (x1 + (x2-x1)/2, y1 + (y2-y1)/2)
                     
                     print(center_image(konumu, ekran_orani, orta_pozisyon_orani))
 
                     # Nesneyi çerçeve içine al ve etiketle
-                    cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 2)
+                    cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), box_color, 2)
                     cv2.circle(frame, (int(konumu[0]), int(konumu[1])), 5, (0, 0, 255), -1)
 
                     cv2.putText(frame, f"{class_name} {conf:.2f}", (int(x1), int(y1 - 10)), 
