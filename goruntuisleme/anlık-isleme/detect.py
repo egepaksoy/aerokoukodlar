@@ -52,7 +52,7 @@ def center_image(konum, ekran_orani, orta_pozisyon_orani: float = 0.4):
     
     return islem
 
-model_name = "kullanilcak.pt"
+model_name = "shapes.pt"
 model = YOLO("../models/" + model_name)
 
 orta_pozisyon_orani = (0.4)

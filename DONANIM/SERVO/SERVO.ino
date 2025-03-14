@@ -3,26 +3,37 @@
 Servo myServoX; // Servo motor objesi
 Servo myServoY; // Servo motor objesi
 
-const int servoYPin = 9;      // Servo motor pini
-const int servoXPin = 10;      // Servo motor pini
+const int servoYPin = 9;      // Servo motor Y pini
+const int servoXPin = 10;      // Servo motor X pini
+
 int artisMiktari = 2;
 
 int joystickXValue = 500;
 int joystickYValue = 500;
 
-int currentXPosition = 90; // Servo başlangıç pozisyonu (orta)
-int currentYPosition = 90; // Servo başlangıç pozisyonu (orta)
+const int startXPosition = 90; // Servo başlangıç pozisyonu (orta)
+const int startYPosition = 140; // Servo başlangıç pozisyonu (orta)
 
-bool first = true;
+const int maxYAngle = 150;
+const int minYAngle = 110;
+
+const int zeroAngleY = 110;
+const int zeroAngleX = 90;
+
+int calcAngleX;
+int calcAngleY;
+
+int currentXPosition;
+int currentYPosition;
 
 void setup() {
-  myServoX.attach(servoXPin);    // Servo motoru belirtilen pine bağla
-  myServoX.write(currentXPosition); // Servo başlangıç pozisyonuna ayarla
+  myServoX.attach(servoXPin);
+  myServoX.write(startXPosition); // Servo başlangıç pozisyonuna ayarla
 
-  myServoY.attach(servoYPin);    // Servo motoru belirtilen pine bağla
-  myServoY.write(currentYPosition); // Servo başlangıç pozisyonuna ayarla
+  myServoY.attach(servoYPin);
+  myServoY.write(startYPosition); // Servo başlangıç pozisyonuna ayarla
   
-  Serial.begin(9600);          // Seri iletişimi başlat
+  Serial.begin(9600);
 }
 
 void loop() {
@@ -48,18 +59,22 @@ void loop() {
         myServoX.write(currentXPosition);
       }
 
-      if (joystickYValue > 900) {
+      if (joystickYValue > 900 && currentYPosition < maxYAngle) {
         currentYPosition += artisMiktari;
         if (currentYPosition > 180) currentYPosition = 180;
         myServoY.write(currentYPosition);
-      } else if (joystickYValue < 200) {
+      } else if (joystickYValue < 200 && currentYPosition > minYAngle) {
         currentYPosition -= artisMiktari;
         if (currentYPosition < 0) currentYPosition = 0;
         myServoY.write(currentYPosition);
       }
 
-      Serial.println(joystickXValue);
-      Serial.println(joystickYValue);
+      calcAngleY = abs(currentYPosition - zeroAngleY);
+      calcAngleX = (zeroAngleX - currentXPosition) * -1;
+
+      Serial.print(calcAngleX);
+      Serial.print("|");
+      Serial.println(calcAngleY);
 
       delay(20);
     }
