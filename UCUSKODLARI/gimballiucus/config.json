@@ -1,0 +1,7 @@
+{
+    "raspberry-ip": "127.0.0.1",
+    "gimbal-port": 9998,
+    "video-port": 9999,
+    "rfd-port": "com5",
+    "arduino-port": "com6"
+}
