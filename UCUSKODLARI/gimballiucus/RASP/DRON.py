@@ -132,6 +132,13 @@ try:
         arduino = serial_handler.Serial_Control(port=config["ARDUINO"]["port"])
         print(f"Arduino {config['ARDUINO']['port']} portundan bağlandı")
 
+        #GIMBALI Hizalama
+        arduino.send_to_arduino("500|0\n")
+        time.sleep(1)
+        arduino.send_to_arduino("500|1000\n")
+        time.sleep(1)
+        arduino.send_to_arduino("500|500\n")
+
         while not stop_event.is_set():
             data = client.get_data()
             if data == None:
