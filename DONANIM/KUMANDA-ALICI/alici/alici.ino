@@ -53,10 +53,10 @@ void loop() {
         ppmValues[0] = 0; 
 
         // 0-1023 aralığını 1000-2000 aralığına ölçekleme
-        ppmValues[1] = map(data.roll, 0, 1023, 1000, 2000) - 250;  // Roll
-        ppmValues[2] = map(data.pitch, 0, 1023, 1000, 2000) - 250;  // Pitch
-        ppmValues[3] = map(data.throttle, 0, 1023, 1000, 2000) - 250;  // Throttle
-        ppmValues[4] = map(data.yaw, 0, 1023, 1000, 2000) - 250;  // Yaw
+        ppmValues[1] = map(data.roll, 150, 1000, 1000, 2000);  // Roll
+        ppmValues[2] = map(data.pitch, 0, 1023, 1000, 2000);  // Pitch
+        ppmValues[3] = map(data.throttle, 0, 1023, 1000, 2000);  // Throttle
+        ppmValues[4] = map(data.yaw, 0, 1023, 1000, 2000);  // Yaw
         ppmValues[5] = 1000;
         if (data.button)
         {
