@@ -1,0 +1,16 @@
+{
+    "UDP":
+    {
+        "ip": "",
+        "port": 9999
+    },
+    "TCP":
+    {
+        "ip": "",
+        "port": 9998
+    },
+    "ARDUINO":
+    {
+        "port": "/dev/ttyUSB0"
+    }
+}

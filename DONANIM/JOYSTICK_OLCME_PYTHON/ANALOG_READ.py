@@ -39,11 +39,12 @@ class TCP_Client:
             print(f"Hata: {e}")
         
 class Serial_Control:
-    def __init__(self):
-        self.ser = self.connect_serial()
+    def __init__(self, arduino_port):
+        self.ser = self.connect_serial(arduino_port)
     
-    def connect_serial(self):
+    def connect_serial(self, arduino_port):
         """Seri porta bağlanır."""
+        '''
         seri_portlar = serial.tools.list_ports.comports()
         seri_port = ""
         print("Seri portlar listelendi.")
@@ -55,8 +56,9 @@ class Serial_Control:
         if seri_port == "":
             print("CH340 çevirici bulunamadı!")
             sys.exit(1)
-        
-        ser = serial.Serial(seri_port, 9600)  # Arduino'nun bağlı olduğu portu ve baud rate'i belirle
+        '''
+
+        ser = serial.Serial(arduino_port, 9600)  # Arduino'nun bağlı olduğu portu ve baud rate'i belirle
         print("Bağlantı sağlandı:", ser.name)
         return ser
     
@@ -81,7 +83,7 @@ recv_port = int(sys.argv[2])
 
 try:
     client = TCP_Client(recv_ip=recv_ip, recv_port=recv_port)
-    serial = Serial_Control()
+    serial = Serial_Control("com3")
 
     start_time = time.time()
     while True:
