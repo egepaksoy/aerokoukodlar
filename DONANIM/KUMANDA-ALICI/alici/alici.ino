@@ -30,19 +30,38 @@ void setup() {
 }
 
 void sendPPM() {
-    noInterrupts();
+    static unsigned long lastPPMTime = 0; // Son gönderilen PPM sinyalinin zamanı
+    const unsigned int syncPulse = 5000; // 5ms Sync darbesi
+    const unsigned int gapTime = 300;    // Kanal arası boşluk süresi (300µs)
+    
+    noInterrupts(); // Kesintileri devre dışı bırak
+
+    unsigned long startTime = micros(); // PPM sinyalinin başlangıç zamanı
+
+    // Sync Pulse - Çerçevenin başlangıcını belirtir
     digitalWrite(ppmPin, HIGH);
     delayMicroseconds(300);
     digitalWrite(ppmPin, LOW);
-    delayMicroseconds(300);
+    delayMicroseconds(syncPulse);
+
     for (int i = 0; i < ppmChannels; i++) {
         digitalWrite(ppmPin, HIGH);
-        delayMicroseconds(ppmValues[i]);
+        delayMicroseconds(ppmValues[i] - 300);  // Kanalın süresi (-300 mission planner'da ayarlamak için)
         digitalWrite(ppmPin, LOW);
-        delayMicroseconds(300);
+        delayMicroseconds(gapTime);  // Kanal arası boşluk
     }
-    interrupts();
+
+    interrupts(); // Kesintileri tekrar aç
+
+    // Çerçevenin tamamlanma süresini kontrol et
+    unsigned long elapsedTime = micros() - startTime;
+    unsigned long frameTime = 22000; // 22ms toplam çerçeve süresi (50Hz)
+
+    if (elapsedTime < frameTime) {
+        delayMicroseconds(frameTime - elapsedTime); // PPM çerçevesini tamamla
+    }
 }
+
 
 void loop() {
     if (radio.available()) {
@@ -53,23 +72,25 @@ void loop() {
         ppmValues[0] = 0; 
 
         // 0-1023 aralığını 1000-2000 aralığına ölçekleme
-        ppmValues[1] = map(data.roll, 150, 1000, 1000, 2000);  // Roll
-        ppmValues[2] = map(data.pitch, 0, 1023, 1000, 2000);  // Pitch
-        ppmValues[3] = map(data.throttle, 0, 1023, 1000, 2000);  // Throttle
-        ppmValues[4] = map(data.yaw, 0, 1023, 1000, 2000);  // Yaw
-        ppmValues[5] = 1000;
-        if (data.button)
-        {
-          ppmValues[5] = 2000;
-        }
-        ppmValues[6] = 0;  // Radio6
-        ppmValues[7] = 0;  // Radio7
+        ppmValues[1] = map(data.roll, 60, 820, 1200, 1800);  // Roll
+        ppmValues[2] = map(data.pitch, 150, 785, 1200, 1800);  // Pitch
+        ppmValues[3] = map(data.throttle, 204, 850, 1200, 1800);  // Throttle
+        ppmValues[4] = map(data.yaw, 195, 930, 1200, 1800);  // Yaw
+        ppmValues[5] = 1100 + data.button * 280;
+        ppmValues[6] = 1100;  // Radio6
+        ppmValues[7] = 1100;  // Radio7
         
-        Serial.print("Alinan Veriler - Throttle: "); Serial.print(ppmValues[3]);
-        Serial.print(" Yaw: "); Serial.print(ppmValues[4]);
-        Serial.print(" Pitch: "); Serial.print(ppmValues[2]);
-        Serial.print(" Roll: "); Serial.print(ppmValues[1]);
-        Serial.print(" Button: "); Serial.println(ppmValues[5]);
+        // Serial.print("Alinan Veriler - Throttle: "); Serial.print(ppmValues[3]);
+        // Serial.print(" Yaw: "); Serial.print(ppmValues[4]);
+        // Serial.print(" Pitch: "); Serial.print(ppmValues[2]);
+        // Serial.print(" Roll: "); Serial.print(ppmValues[1]);
+        // Serial.print(" Button: "); Serial.println(ppmValues[5]);
+
+        Serial.print("Alinan Veriler - Throttle: "); Serial.print(data.throttle);
+        Serial.print(" Yaw: "); Serial.print(data.yaw);
+        Serial.print(" Pitch: "); Serial.print(data.pitch);
+        Serial.print(" Roll: "); Serial.print(data.roll);
+        Serial.print(" Button: "); Serial.println(data.button);
     }
     
     sendPPM();

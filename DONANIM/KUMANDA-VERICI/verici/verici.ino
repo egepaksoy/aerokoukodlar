@@ -31,12 +31,19 @@ void loop() {
     data.roll = 1023 - analogRead(A4);  // Roll değerini tersine çeviriyoruz
     data.button = digitalRead(2) == LOW;
 
-    radio.write(&data, sizeof(data));
-    Serial.print("Gonderilen Veriler - Throttle: "); Serial.print(data.throttle);
-    Serial.print(" Yaw: "); Serial.print(data.yaw);
-    Serial.print(" Pitch: "); Serial.print(data.pitch);
-    Serial.print(" Roll: "); Serial.print(data.roll);
-    Serial.print(" Button: "); Serial.println(data.button);
+    bool success = radio.write(&data, sizeof(data));
+    if (success)
+    {
+      Serial.print("Gonderilen Veriler - Throttle: "); Serial.print(data.throttle);
+      Serial.print(" Yaw: "); Serial.print(data.yaw);
+      Serial.print(" Pitch: "); Serial.print(data.pitch);
+      Serial.print(" Roll: "); Serial.print(data.roll);
+      Serial.print(" Button: "); Serial.println(data.button);
+    }
+    else
+    {
+      Serial.println("Hata");
+    }
     
     delay(80);
 }
