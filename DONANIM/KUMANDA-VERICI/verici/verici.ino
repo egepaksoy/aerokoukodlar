@@ -11,7 +11,7 @@ struct DataPacket {
     int yaw;
     int pitch;
     int roll;
-    bool button;
+    int button;
 };
 
 void setup() {
@@ -21,6 +21,7 @@ void setup() {
     radio.setPALevel(RF24_PA_MIN);
     radio.stopListening();
     pinMode(2, INPUT_PULLUP);
+    pinMode(3, INPUT_PULLUP);
 }
 
 void loop() {
@@ -29,7 +30,19 @@ void loop() {
     data.yaw = 1023 - analogRead(A1);  // Yaw değerini tersine çeviriyoruz
     data.pitch = analogRead(A3);
     data.roll = 1023 - analogRead(A4);  // Roll değerini tersine çeviriyoruz
-    data.button = digitalRead(2) == LOW;
+    
+    if (digitalRead(2) == LOW && digitalRead(3) == HIGH)
+    {
+      data.button = 0;
+    }
+    else if (digitalRead(2) == HIGH && digitalRead(3) == HIGH)
+    {
+      data.button = 1;
+    }
+    else if (digitalRead(2) == HIGH && digitalRead(3) == LOW)
+    {
+      data.button = 2;
+    }
 
     bool success = radio.write(&data, sizeof(data));
     if (success)

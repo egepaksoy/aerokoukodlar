@@ -16,7 +16,7 @@ struct DataPacket {
     int yaw;
     int pitch;
     int roll;
-    bool button;
+    int button;
 };
 
 void setup() {
