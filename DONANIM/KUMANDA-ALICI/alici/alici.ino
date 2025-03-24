@@ -8,7 +8,7 @@ const byte address[6] = "00001";
 unsigned long lastReceivedTime = 0;
 const unsigned long timeout = 2000; // 20 ms zaman aşımı süresi
 const int ppmPin = 2; // PPM çıkışı için D2 pini
-const int ppmChannels = 5;
+const int ppmChannels = 8;
 int ppmValues[ppmChannels];
 
 struct DataPacket {
