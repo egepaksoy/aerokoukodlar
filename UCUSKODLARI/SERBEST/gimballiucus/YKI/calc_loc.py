@@ -1,6 +1,6 @@
 import math
 
-def calc_location(current_loc, yaw_angle, tcp_data):
+def calc_location(current_loc, yaw_angle, tcp_data, DEG):
     # Calculate the new location of the gimbal
     # based on the distance from the current location
     # and the angles of the servos
@@ -9,9 +9,7 @@ def calc_location(current_loc, yaw_angle, tcp_data):
     abs_distance, servo_x_angle, servo_y_angle = tcp_data.split("|")
     abs_distance = float(abs_distance)
     servo_x_angle = float(servo_x_angle)
-    servo_y_angle = float(servo_y_angle)
-
-    DEG = 0.00001172485
+    servo_y_angle = abs(float(servo_y_angle))
 
     current_x_loc = current_loc[0]
     current_y_loc = current_loc[1]

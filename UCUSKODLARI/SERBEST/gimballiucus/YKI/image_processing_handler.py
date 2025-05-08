@@ -82,6 +82,7 @@ class Handler:
                     frame = cv2.imdecode(npdata, cv2.IMREAD_COLOR)
                     
                     if frame is not None:
+                        frame = cv2.flip(frame, -1)
                         if time.time() - start_time > 0.1 and self.proccessing:
                             results = self.model(frame)
                             for r in results:

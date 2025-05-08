@@ -3,6 +3,7 @@ import json
 import time
 import sys
 sys.path.append('../../../../pymavlink_custom')
+sys.path.append("../")
 
 from pymavlink_custom import Vehicle
 import tcp_handler
