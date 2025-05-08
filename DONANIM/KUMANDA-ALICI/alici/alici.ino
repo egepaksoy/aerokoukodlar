@@ -10,6 +10,7 @@ const unsigned long timeout = 2000; // 20 ms zaman aşımı süresi
 const int ppmPin = 2; // PPM çıkışı için D2 pini
 const int ppmChannels = 8;
 int ppmValues[ppmChannels];
+int start_time = millis();
 
 struct DataPacket {
     int throttle;
@@ -23,7 +24,9 @@ void setup() {
     Serial.begin(9600);
     radio.begin();
     radio.openReadingPipe(0, address);
-    radio.setPALevel(RF24_PA_MIN);
+    radio.setChannel(76); // Daha az kullanılan bir kanal
+    radio.setDataRate(RF24_2MBPS);  // 2Mbps hızında haberlesme
+    radio.setPALevel(RF24_PA_HIGH);
     radio.startListening();
     lastReceivedTime = millis();
     pinMode(ppmPin, OUTPUT);
@@ -72,25 +75,31 @@ void loop() {
         ppmValues[0] = 0; 
 
         // 0-1023 aralığını 1000-2000 aralığına ölçekleme
-        ppmValues[1] = map(data.roll, 60, 820, 1200, 1800);  // Roll
-        ppmValues[2] = map(data.pitch, 150, 785, 1200, 1800);  // Pitch
-        ppmValues[3] = map(data.throttle, 204, 850, 1200, 1800);  // Throttle
-        ppmValues[4] = map(data.yaw, 195, 930, 1200, 1800);  // Yaw
+        ppmValues[1] = map(data.roll, 60, 820, 1000, 2000);  // Roll
+        ppmValues[2] = map(data.pitch, 150, 785, 1000, 2000);  // Pitch
+        ppmValues[3] = map(data.throttle, 195, 850, 1000, 2000);  // Throttle
+        ppmValues[4] = map(data.yaw, 210, 950, 1000, 2000);  // Yaw
         ppmValues[5] = 1100 + data.button * 280;
         ppmValues[6] = 1100;  // Radio6
         ppmValues[7] = 1100;  // Radio7
         
-        // Serial.print("Alinan Veriler - Throttle: "); Serial.print(ppmValues[3]);
-        // Serial.print(" Yaw: "); Serial.print(ppmValues[4]);
-        // Serial.print(" Pitch: "); Serial.print(ppmValues[2]);
-        // Serial.print(" Roll: "); Serial.print(ppmValues[1]);
-        // Serial.print(" Button: "); Serial.println(ppmValues[5]);
+        if (millis() - start_time > 200)
+        {
+          Serial.print("Alinan Veriler PPM - Throttle: "); Serial.print(ppmValues[3]);
+          Serial.print(" Yaw: "); Serial.print(ppmValues[4]);
+          Serial.print(" Pitch: "); Serial.print(ppmValues[2]);
+          Serial.print(" Roll: "); Serial.print(ppmValues[1]);
+          Serial.print(" Button: "); Serial.println(ppmValues[5]);
 
-        Serial.print("Alinan Veriler - Throttle: "); Serial.print(data.throttle);
-        Serial.print(" Yaw: "); Serial.print(data.yaw);
-        Serial.print(" Pitch: "); Serial.print(data.pitch);
-        Serial.print(" Roll: "); Serial.print(data.roll);
-        Serial.print(" Button: "); Serial.println(data.button);
+          Serial.print("Alinan Veriler Kumanda - Throttle: "); Serial.print(data.throttle);
+          Serial.print(" Yaw: "); Serial.print(data.yaw);
+          Serial.print(" Pitch: "); Serial.print(data.pitch);
+          Serial.print(" Roll: "); Serial.print(data.roll);
+          Serial.print(" Button: "); Serial.println(data.button);
+          
+          Serial.println();
+          start_time = millis();
+        }
     }
     
     sendPPM();

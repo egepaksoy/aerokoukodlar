@@ -1,0 +1,17 @@
+{
+    "DRONE":
+    {
+        "path": "com6",
+        "id": 2,
+        "alt": 5,
+        "rtl-alt": 5,
+        "top-birakma-alt": 3,
+        "direk-locs": [[40.7121319, 30.0244899], [40.7120839, 30.0245373]]
+    },
+    "UDP":
+    {
+        "ip": "192.168.31.108",
+        "port": 9999,
+        "model-path": "./models/kullanilcak.pt"
+    }
+}

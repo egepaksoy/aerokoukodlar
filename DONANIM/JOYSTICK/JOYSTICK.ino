@@ -1,6 +1,6 @@
 #define JOYSTICK_X A0
 #define JOYSTICK_Y A1
-#define BUTTON_PIN 9  // Butonun bağlı olduğu pin
+#define BUTTON_PIN 13  // Butonun bağlı olduğu pin
 
 void setup() {
   // Seri haberleşmeyi başlat

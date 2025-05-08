@@ -14,8 +14,11 @@ int joystickYValue = 500;
 const int startXPosition = 90; // Servo başlangıç pozisyonu (orta)
 const int startYPosition = 140; // Servo başlangıç pozisyonu (orta)
 
-const int maxYAngle = 150;
-const int minYAngle = 110;
+const int maxYAngle = 140;
+const int minYAngle = 90;
+
+const int maxXAngle = 170;
+const int minXAngle = 10;
 
 const int zeroAngleY = 110;
 const int zeroAngleX = 90;
@@ -49,11 +52,11 @@ void loop() {
     joystickYValue = receivedData.substring(receivedData.indexOf("|") + 1).toInt();
 
     while (Serial.available() <= 0) {
-      if (joystickXValue > 900) {
+      if (joystickXValue > 900 && currentXPosition < maxXAngle) {
         currentXPosition += artisMiktari;
         if (currentXPosition > 180) currentXPosition = 180;
         myServoX.write(currentXPosition);
-      } else if (joystickXValue < 200) {
+      } else if (joystickXValue < 200 && currentXPosition > minXAngle) {
         currentXPosition -= artisMiktari;
         if (currentXPosition < 0) currentXPosition = 0;
         myServoX.write(currentXPosition);

@@ -459,9 +459,12 @@ class Vehicle():
             return e
     
     # Manuel RTL
-    def rtl(self, takeoff_pos, alt, drone_id: int=None):
+    def rtl(self, takeoff_pos, alt: int=None, drone_id: int=None):
         if drone_id is None:
             drone_id = self.drone_id
+        
+        if alt == None:
+            alt = self.get_pos(drone_id=drone_id)[2]
 
         try:
             self.set_mode(mode="GUIDED", drone_id=drone_id)
@@ -650,6 +653,28 @@ class Vehicle():
                 pwm,
                 0, 0, 0, 0, 0)
         except Exception as e:
+            return e
+
+    # sağa sola ileri geri hareket ettirme
+    def move_drone(self, rota, drone_id: int=None):
+        if drone_id is None:
+            drone_id = self.drone_id
+        
+        try:
+            vx, vy, vz = rota
+
+            self.vehicle.mav.set_position_target_local_ned_send(
+                0,  # Timestamp
+                drone_id, self.vehicle.target_component,
+                mavutil.mavlink.MAV_FRAME_LOCAL_NED,  # Koordinat sistemi
+                0b0000111111000111,  # Type mask (sadece hız kullanılacak)
+                0, 0, 0,  # Pozisyon (kullanılmıyor)
+                vx, vy, vz,  # Hız (m/s)
+                0, 0, 0,  # İvme (kullanılmıyor)
+                0, 0)  # Yaw, yaw_rate (kullanılmıyor)
+
+        except Exception as e:
+            print(e)
             return e
 
     def get_distance(self, loc1, loc2):

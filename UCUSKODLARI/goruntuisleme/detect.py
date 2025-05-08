@@ -8,7 +8,7 @@ from ultralytics import YOLO
 import os
 import time
 
-model_name = "kullanilcak.pt"
+model_name = "best_1.pt"
 model = YOLO("./models/" + model_name)
 
 if len(sys.argv) != 2:

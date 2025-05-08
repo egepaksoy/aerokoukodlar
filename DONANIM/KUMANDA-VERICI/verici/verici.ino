@@ -18,7 +18,9 @@ void setup() {
     Serial.begin(9600);
     radio.begin();
     radio.openWritingPipe(address);
-    radio.setPALevel(RF24_PA_MIN);
+    radio.setChannel(76); // Daha az kullanılan bir kanal
+    radio.setDataRate(RF24_2MBPS);  // 2Mbps hızında haberlesme
+    radio.setPALevel(RF24_PA_HIGH);
     radio.stopListening();
     pinMode(2, INPUT_PULLUP);
     pinMode(3, INPUT_PULLUP);
