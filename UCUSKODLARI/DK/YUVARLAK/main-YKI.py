@@ -121,7 +121,7 @@ def show_proccesed_image(config):
 
 
 def image_processing_udp_YOLO(model, config):
-    orta_pozisyon_orani = (0.4)
+    orta_pozisyon_orani = (0.2)
 
     # Kullanıcıdan IP adresi ve port numarasını komut satırından al
     UDP_IP = "0.0.0.0"  # Alıcı bilgisayarın IP adresi
@@ -194,7 +194,7 @@ def image_processing_udp_YOLO(model, config):
             buffer += packet_data  # Gelen veri parçasını tampona ekle
 
             # Çıkış için 'q' tuşuna basılması beklenir
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            if cv2.waitKey(1) & 0xFF == ord('q') or yuk_birakildi_event.is_set():
                 break
                 
     finally:
@@ -202,9 +202,9 @@ def image_processing_udp_YOLO(model, config):
         cv2.destroyAllWindows()  # Tüm OpenCV pencerelerini kapat
         sock.close()  # Soketi kapat
 
-            
+
 def image_processing_local_YOLO(model):
-    orta_pozisyon_orani = (0.4)
+    orta_pozisyon_orani = (0.2)
 
     cap = cv2.VideoCapture(0) 
 
@@ -240,7 +240,7 @@ def image_processing_local_YOLO(model):
             
             
             # Çıkış için 'q' tuşuna basılması beklenir
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            if cv2.waitKey(1) & 0xFF == ord('q') or yuk_birakildi_event.is_set():
                 break
             
     finally:
@@ -300,12 +300,14 @@ def failsafe(vehicle, home_pos=None, config: json=None):
 ############### GÖREV ###############
 config = json.load(open("./config.json", "r"))
 stop_event = threading.Event()
+yuk_birakildi_event = threading.Event()
 
 model_name = config["UDP"]["model-path"]
 model = YOLO(model_name)
 
 image_queue = queue.Queue()
-img_processing_thread = threading.Thread(target=image_processing_udp_YOLO, args=(model, config), daemon=True)
+#!img_processing_thread = threading.Thread(target=image_processing_udp_YOLO, args=(model, config), daemon=True)
+img_processing_thread = threading.Thread(target=image_processing_local_YOLO, args=(model,), daemon=True)
 img_processing_thread.start()
 
 on_mission = False
@@ -314,6 +316,8 @@ yuk_birakildi = False
 vehicle = Vehicle(config["DRONE"]["path"])
 
 start_time = time.time()
+
+pid_val = 1
 
 ALT = config["DRONE"]["alt"]
 DRONE_ID = config["DRONE"]["id"] # drone id
@@ -332,7 +336,7 @@ try:
     direk_count = 0
 
     start_time = time.time()
-    on_miss_time = time.time()
+    on_miss_time = 0
     while not stop_event.is_set():
         if time.time() - start_time >= 3:
             print("Taranıyor..")
@@ -340,35 +344,44 @@ try:
         
         if not image_queue.empty() and yuk_birakildi == False:
             class_name, (x_uzaklik, y_uzaklik) = image_queue.get_nowait()
+            y_uzaklik *= -1 #! terse gidiyordu
             print(f"\n\n{DRONE_ID}>> DRONE {class_name} hedefini algıladı")
             print(f"x: {x_uzaklik}, y: {y_uzaklik}\n\n")
 
             if x_uzaklik < 0:
-                x_rota = -1
+                x_rota = -1 * pid_val
             elif x_uzaklik > 0:
-                x_rota = 1
+                x_rota = 1 * pid_val
             else:
                 x_rota = 0
             if y_uzaklik < 0:
-                y_rota = -1
+                y_rota = -1 * pid_val
             elif y_uzaklik > 0:
-                y_rota = 1
+                y_rota = 1 * pid_val
             else:
                 y_rota = 0
+            
+            print(f"{x_rota}|{y_rota}")
             
             on_mission = True
 
             if on_miss_time == 0 and abs(x_rota) + abs(y_rota) == 0:
                 on_miss_time = time.time()
+                if pid_val > 0.07:
+                    pid_val /= 2
+
+            if abs(x_rota) + abs(y_rota) != 0:
+                on_miss_time = 0
         
         if on_mission:
             rota = (y_rota, x_rota, 0)
             vehicle.move_drone(rota, drone_id=DRONE_ID)
             
-            if time.time() - on_miss_time > 2:
+            if time.time() - on_miss_time > 4 and on_miss_time != 0:
                 print("Yük bırakıldı")
                 on_mission = False
                 yuk_birakildi = True
+                yuk_birakildi_event.set()
         
         if on_mission == False:
             if vehicle.on_location(direk_locs[0], seq=0, drone_id=DRONE_ID) and direk_count == 0:
