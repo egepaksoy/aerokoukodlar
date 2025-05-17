@@ -6,6 +6,9 @@ from picamera2 import Picamera2
 import cv2
 import struct
 
+if len(sys.argv) != 2:
+    print("Kod kullanımı: python main-RASP.py <ip_adresi> <port>")
+
 # Kullanıcıdan IP adresi ve port numarasını komut satırından al
 UDP_IP = sys.argv[1]  # Alıcı bilgisayarın IP adresi
 UDP_PORT = int(sys.argv[2])  # Alıcı bilgisayarın port numarası

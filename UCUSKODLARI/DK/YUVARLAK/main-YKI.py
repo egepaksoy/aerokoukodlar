@@ -124,7 +124,7 @@ def image_processing_udp_YOLO(model, config):
     orta_pozisyon_orani = (0.2)
 
     # Kullanıcıdan IP adresi ve port numarasını komut satırından al
-    UDP_IP = "0.0.0.0"  # Alıcı bilgisayarın IP adresi
+    UDP_IP = config["UDP"]["ip"]  # Alıcı bilgisayarın IP adresi
     UDP_PORT = int(config["UDP"]["port"])  # Alıcı bilgisayarın port numarası
     BUFFER_SIZE = 65536  # UDP tampon boyutu, 64 KB
 
@@ -140,6 +140,9 @@ def image_processing_udp_YOLO(model, config):
 
         frame_time = time.time()
         fps = 0
+
+        udp_connected.set()
+        print("Bağlandı")
         while not stop_event.is_set():
             data, addr = sock.recvfrom(BUFFER_SIZE)  # Maksimum UDP paket boyutu kadar veri al
             
@@ -152,11 +155,11 @@ def image_processing_udp_YOLO(model, config):
                     # Görüntüyü verinin tamamı alındığında oluştur
                     npdata = np.frombuffer(buffer, dtype=np.uint8)
                     frame = cv2.imdecode(npdata, cv2.IMREAD_COLOR)
-                    
+
                     if frame is not None:
                         ekran_orani = (frame.shape[1], frame.shape[0])
 
-                        results = model(frame)
+                        results = model(frame, verbose=False)
                         for r in results:
                             boxes = r.boxes
                             for box in boxes:
@@ -169,8 +172,8 @@ def image_processing_udp_YOLO(model, config):
 
                                 image_queue.put((class_name, is_centered(xyxy, ekran_orani, orta_pozisyon_orani)))
 
-                        cv2.rectangle(frame, (int(ekran_orani[0] * (0.5 - orta_pozisyon_orani / 2)), int(ekran_orani[1] * (0.5 - orta_pozisyon_orani / 2))), (int(ekran_orani[0] * (0.5 + orta_pozisyon_orani / 2)), int(ekran_orani[1] * (0.5 + orta_pozisyon_orani / 2))), (255, 0, 0), 2)
 
+                        cv2.rectangle(frame, (int(ekran_orani[0] * (0.5 - orta_pozisyon_orani / 2)), int(ekran_orani[1] * (0.5 - orta_pozisyon_orani / 2))), (int(ekran_orani[0] * (0.5 + orta_pozisyon_orani / 2)), int(ekran_orani[1] * (0.5 + orta_pozisyon_orani / 2))), (255, 0, 0), 2)
 
                         if time.time() - frame_time >= 1:
                             fps = total_frame / (time.time() - frame_time)
@@ -193,10 +196,13 @@ def image_processing_udp_YOLO(model, config):
             
             buffer += packet_data  # Gelen veri parçasını tampona ekle
 
+            if stop_event.is_set():
+                break
+                
             # Çıkış için 'q' tuşuna basılması beklenir
             if cv2.waitKey(1) & 0xFF == ord('q') or yuk_birakildi_event.is_set():
                 break
-                
+            
     finally:
         print("Program sonlandırıldı.")
         cv2.destroyAllWindows()  # Tüm OpenCV pencerelerini kapat
@@ -213,6 +219,7 @@ def image_processing_local_YOLO(model):
         exit()
 
     try:
+        udp_connected.set()
         while not stop_event.is_set():
             ret, frame = cap.read()
             ekran_orani = (frame.shape[1], frame.shape[0])
@@ -222,7 +229,7 @@ def image_processing_local_YOLO(model):
                 break
 
             if frame is not None:
-                results = model(frame)
+                results = model(frame, verbose=False)
                 for r in results:
                     boxes = r.boxes
                     for box in boxes:
@@ -238,6 +245,9 @@ def image_processing_local_YOLO(model):
                 cv2.rectangle(frame, (int(ekran_orani[0] * (0.5 - orta_pozisyon_orani / 2)), int(ekran_orani[1] * (0.5 - orta_pozisyon_orani / 2))), (int(ekran_orani[0] * (0.5 + orta_pozisyon_orani / 2)), int(ekran_orani[1] * (0.5 + orta_pozisyon_orani / 2))), (255, 0, 0), 2)
                 cv2.imshow('YOLOv8 Canlı Tespit', frame)  # Görüntüyü göster
             
+            
+            if stop_event.is_set():
+                break
             
             # Çıkış için 'q' tuşuna basılması beklenir
             if cv2.waitKey(1) & 0xFF == ord('q') or yuk_birakildi_event.is_set():
@@ -300,6 +310,7 @@ def failsafe(vehicle, home_pos=None, config: json=None):
 ############### GÖREV ###############
 config = json.load(open("./config.json", "r"))
 stop_event = threading.Event()
+udp_connected = threading.Event()
 yuk_birakildi_event = threading.Event()
 
 model_name = config["UDP"]["model-path"]
@@ -310,6 +321,12 @@ image_queue = queue.Queue()
 img_processing_thread = threading.Thread(target=image_processing_local_YOLO, args=(model,), daemon=True)
 img_processing_thread.start()
 
+timer = time.time()
+while not udp_connected.is_set():
+    if time.time() - timer >= 2:
+        print("Bağlantı bekleniyor")
+        timer = time.time()
+
 on_mission = False
 yuk_birakildi = False
 
@@ -317,7 +334,7 @@ vehicle = Vehicle(config["DRONE"]["path"])
 
 start_time = time.time()
 
-pid_val = 1
+pid_val = 0.5
 
 ALT = config["DRONE"]["alt"]
 DRONE_ID = config["DRONE"]["id"] # drone id
@@ -344,7 +361,8 @@ try:
         
         if not image_queue.empty() and yuk_birakildi == False:
             class_name, (x_uzaklik, y_uzaklik) = image_queue.get_nowait()
-            y_uzaklik *= -1 #! terse gidiyordu
+            #! UDP'de duz gidiyor local'de ters oluyor
+            #! y_uzaklik *= -1
             print(f"\n\n{DRONE_ID}>> DRONE {class_name} hedefini algıladı")
             print(f"x: {x_uzaklik}, y: {y_uzaklik}\n\n")
 
@@ -423,5 +441,6 @@ except Exception as e:
 finally:
     if not stop_event.is_set():
         stop_event.set()
+        print("Stop event set edildi")
     vehicle.vehicle.close()
     cv2.destroyAllWindows()
