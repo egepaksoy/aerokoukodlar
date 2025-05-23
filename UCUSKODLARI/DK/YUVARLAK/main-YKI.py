@@ -1,6 +1,6 @@
 import time
 import sys
-sys.path.append('./pymavlink_custom')
+sys.path.append('../../pymavlink_custom')
 from pymavlink_custom import Vehicle
 import threading
 from ultralytics import YOLO
@@ -317,8 +317,8 @@ model_name = config["UDP"]["model-path"]
 model = YOLO(model_name)
 
 image_queue = queue.Queue()
-#!img_processing_thread = threading.Thread(target=image_processing_udp_YOLO, args=(model, config), daemon=True)
-img_processing_thread = threading.Thread(target=image_processing_local_YOLO, args=(model,), daemon=True)
+img_processing_thread = threading.Thread(target=image_processing_udp_YOLO, args=(model, config), daemon=True)
+#!img_processing_thread = threading.Thread(target=image_processing_local_YOLO, args=(model,), daemon=True)
 img_processing_thread.start()
 
 timer = time.time()

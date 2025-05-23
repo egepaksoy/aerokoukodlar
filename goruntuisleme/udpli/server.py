@@ -6,14 +6,14 @@ import struct
 import os
 import time
 
-if len(sys.argv) != 2:
-    print("Kod kullanımı python detect.py <port numarası>")
+if len(sys.argv) != 3:
+    print("Kod kullanımı python detect.py <ip_adresi> <port numarası>")
     exit()
 
 # Kullanıcıdan IP adresi ve port numarasını komut satırından al
-UDP_IP = "0.0.0.0"  # Alıcı bilgisayarın IP adresi
-UDP_PORT = int(sys.argv[1])  # Alıcı bilgisayarın port numarası
-BUFFER_SIZE = 65536  # UDP tampon boyutu, 64 KB
+UDP_IP = sys.argv[1]  # Alıcı bilgisayarın IP adresi
+UDP_PORT = int(sys.argv[2])  # Alıcı bilgisayarın port numarası
+BUFFER_SIZE = 60000  # UDP tampon boyutu, 64 KB
 
 try:
     # UDP soketi oluştur ve belirtilen IP ve portta dinlemeye başla

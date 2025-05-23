@@ -31,7 +31,7 @@ start_time = time.time()
 ALT = 6
 inme_alt = 3
 DRONE_ID = int(sys.argv[2]) # drone id
-loc = (40.7121124, 30.0246297, ALT)
+loc = ( -35.36232940, 149.16509594, ALT)
 drone_pos = (loc, loc) # ilk waypoint dummy wp
 
 try:
@@ -39,6 +39,8 @@ try:
     vehicle.arm_disarm(arm=True, drone_id=DRONE_ID)
     vehicle.takeoff(ALT, drone_id=DRONE_ID)
     drone_takeoff = vehicle.get_pos(drone_id=DRONE_ID)
+
+    vehicle.set_guided_speed(speed=15, drone_id=DRONE_ID)
     
     print(f"{DRONE_ID}>> takeoff yaptı")
 
