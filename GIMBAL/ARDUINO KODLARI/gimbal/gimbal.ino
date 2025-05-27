@@ -41,24 +41,26 @@ void loop() {
       int x = xStr.toInt();
       int y = yStr.toInt();
 
-      if (x == 2 || y == 2) {
-        Serial.print(posX - zeroX);
-        Serial.print("|");
-        Serial.println(posY - zeroY);
+      // if (x == 2 || y == 2) {
+      //   Serial.print(posX - zeroX);
+      //   Serial.print("|");
+      //   Serial.println(posY - zeroY);
+      // }
+      
+      // Geçerli servo açı aralığı değiştir
+      if (posX + (x*carpan) > minX && posX + (x*carpan) < maxX) {
+        posX += (x * carpan);
       }
+      if (posY + (y*carpan) > minY && posY + (y*carpan) < maxY) {
+        posY += (y * carpan);
+      }
+      servoX.write(posX);
+      servoY.write(posY);
 
-      else {
-        // Geçerli servo açı aralığı değiştir
-        if (posX + (x*carpan) > minX && posX + (x*carpan) < maxX) {
-          posX += (x * carpan);
-        }
-        if (posY + (y*carpan) > minY && posY + (y*carpan) < maxY) {
-          posY += (y * carpan);
-        }
-        servoX.write(posX);
-        servoY.write(posY);
-        delay(delayTime);
-      }
+      Serial.print(posX - zeroX);
+      Serial.print("|");
+      Serial.println(posY - zeroY);
+      delay(delayTime);
     }
   }
 }
