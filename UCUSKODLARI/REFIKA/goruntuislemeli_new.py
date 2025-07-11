@@ -62,6 +62,7 @@ def image_recog_new(picam2, ip: str, port: int, stop_event: threading.Event, bro
         broadcast_started.set()
         while not stop_event.is_set():
             frame = picam2.capture_array()
+            frame = cv2.flip(frame, -1)
 
             ####### GORUNTU ISLEME BASLADI ########
             blurred = cv2.GaussianBlur(frame, (5, 5), 0)

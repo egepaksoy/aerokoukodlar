@@ -31,7 +31,7 @@ start_time = time.time()
 ALT = 5
 DRONE_ID = int(sys.argv[2]) # drone id
 #loc = (40.7120913, 30.02445, ALT)
-loc = (40.7121252, 30.0245713, ALT)
+loc = (40.7121102, 30.0245824, ALT)
 drone_pos = (loc, loc) # ilk waypoint dummy wp
 
 try:

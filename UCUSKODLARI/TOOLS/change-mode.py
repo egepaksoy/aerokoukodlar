@@ -14,10 +14,11 @@ start_time = time.time()
 
 try:
     while True:
-        if vehicle.get_mode() == "GUIDED":
-            vehicle.set_mode(mode="POSHOLD")
-        else:
-            vehicle.set_mode(mode="GUIDED")
+        for i in vehicle.drone_ids:
+            if vehicle.get_mode(drone_id=i) == "GUIDED":
+                vehicle.set_mode(mode="POSHOLD", drone_id=i)
+            else:
+                vehicle.set_mode(mode="GUIDED", drone_id=i)
 
 except KeyboardInterrupt:
     print("Exiting...")

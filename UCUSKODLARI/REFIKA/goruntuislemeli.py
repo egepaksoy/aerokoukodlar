@@ -65,6 +65,7 @@ def image_recog_new(ip: str, port: int, stop_event, shared_state: dict, shared_s
         print(f"{UDP_IP} adresine gönderim başladı")
         while not stop_event.is_set():
             frame = picam2.capture_array()
+            frame = cv2.flip(frame, -1)
 
             #### GORUNTU ISLEME #####
             detected_obj = None

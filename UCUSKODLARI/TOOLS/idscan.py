@@ -3,7 +3,7 @@ import sys
 sys.path.append('../pymavlink_custom')
 from pymavlink_custom import Vehicle
 
-vehicle = Vehicle(sys.argv[1])
+vehicle = Vehicle()
 
 start_time = time.time()
 
